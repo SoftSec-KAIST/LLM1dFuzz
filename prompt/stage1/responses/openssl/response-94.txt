@@ -1,0 +1,7 @@
+The root cause of CVE-2017-3735 stems from an issue with improper validation of an input's length before performing memory access operations. Specifically, when parsing the IPAddressFamily extension in an X.509 certificate, the OpenSSL code did not check if the `addressFamily` field's length was sufficient before attempting to read the two bytes necessary to construct the AFI (Address Family Identifier). 
+
+This oversight led to a scenario where, if the `addressFamily` was less than 2 bytes long, the code would still attempt to read two bytes (`f->addressFamily->data[0] << 8) | (f->addressFamily->data[1]`), thus resulting in a one-byte overread past the end of the `addressFamily->data` buffer if its actual length was less than the expected. Memory access vulnerabilities like this can lead to undefined behavior such as incorrect data being read and processed, potentially leading to crashes or incorrect program logic execution.
+
+The patch addresses the issue by adding a check to ensure that `f->addressFamily` and its `data` field are not NULL and that the `addressFamily`'s length is at least 2 bytes (`f->addressFamily->length < 2`) before performing the read operation. If these conditions are not met, the function now returns 0, avoiding the out-of-bounds read.
+
+This fix essentially prevents the out-of-bounds read by validating the size of the input data before accessing it, adhering to secure coding principles that require input validation to prevent buffer overflow and out-of-bounds access vulnerabilities.

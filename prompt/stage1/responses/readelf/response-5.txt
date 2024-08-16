@@ -1,0 +1,18 @@
+The root cause of CVE-2017-16828 lies in the handling of augmentation data within ELF files by the `display_debug_frames` function in `dwarf.c` of GNU Binutils 2.29.1. Specifically, the issue is an integer overflow vulnerability that could lead to a heap-based buffer over-read and, consequently, a denial of service (application crash) or potentially other impacts when processing crafted ELF files.
+
+### Key Points in the Vulnerability and its Fix:
+
+1. **Integer Overflow in Augmentation Data Length:**
+   - The vulnerability arises from an insufficient validation of the length of augmentation data extracted from an ELF file. The original code used an `unsigned long` type to store `augmentation_data_len`, which could overflow due to not adequately checking the size of the augmentation data against the available data (end - start). An attacker could exploit this by crafting an ELF file with an augmentation data length that, when processed, causes an overflow.
+
+2. **Inadequate Type for Length Variables:**
+   - The use of `unsigned long` could potentially not be wide enough on all platforms to hold the size of data structures processed, contributing to conditions for overflow.
+
+3. **Patch Implementation:**
+   - The patch addresses these issues by changing the variable type used to store the length of augmentation data (`augmentation_data_len`) from `unsigned long` to `bfd_size_type`. `bfd_size_type` is more appropriate because it is designed to represent sizes of objects within BFD (Binary File Descriptor library), offering proper support for holding large sizes and being platform-agnostic.
+   - Additionally, the patch introduces explicit checks for integer overflow conditions when handling the augmentation data length. It incorporates these checks both in terms of reading augmentation data lengths (`read_cie` function) and in ensuring the sanity of the length before using it to access augmentation data.
+   - A new function, `display_augmentation_data`, is introduced to handle the printing of augmentation data in a consistent and safe manner, ensuring that any manipulations or displays of the data take into account the correct and validated length.
+
+### Conclusion
+
+The root cause of CVE-2017-16828 is tied to insufficient validation and type handling of augmentation data lengths in ELF files. The vulnerability could lead to integer overflows and buffer over-reads. The fix involves adopting a more suitable data type for length measurements and introducing explicit overflow and bounds checks, thereby reinforcing the code's robustness against crafted inputs designed to exploit this flaw.

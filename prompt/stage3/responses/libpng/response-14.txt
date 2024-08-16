@@ -1,0 +1,37 @@
+Given the detailed context around CVE-2018-13785 and its exploitation through manipulation of image properties, specifically within the IHDR chunk, we can attempt to construct a PNG that could potentially exploit this vulnerability. 
+
+The IHDR chunk, critical for image dimensions and properties, looks like this in the provided minimal hexadecimal PNG:
+
+```
+0000 000d 4948 4452 0000 0001 0000 0001 0100 0000 0037 6ef9 24
+```
+
+This IHDR chunk breaks down as follows:
+- **Length**: `0000 000d` (13 bytes, the correct IHDR length)
+- **Type**: `4948 4452` (IHDR)
+- **Width**: `0000 0001` (1 pixel)
+- **Height**: `0000 0001` (1 pixel)
+- **Bit Depth**: `01` (1 bit per sample)
+- **Color Type**: `00` (Grayscale)
+- **Compression method, filter method, and interlace method are all zero**.
+
+To potentially exploit CVE-2018-13785, let's focus on manipulating the `width`, `bit depth`, and `color type` in a manner that might lead to an overflow during the calculation of `row_factor`. Simply put, by increasing the width to a very large value, we attempt to induce an integer overflow during the computation. However, crafting such a PNG requires careful consideration to not break the PNG format, and it's a theoretical attack crafted for educational purposes. 
+
+**Modified IHDR Chunk (Hypothetical Attack Vector)**:
+- **Width**: Rather than 1 pixel in width (`0000 0001`), we attempt to set an abnormally large width, for example: `7fff ffff` (2,147,483,647 pixels, close to the maximum positive value for a 32-bit signed integer).
+- **Height, Bit Depth, Color Type**: For simplicity, let's keep these unchanged.
+
+Modified IHDR:
+```
+0000 000d 4948 4452 7fff ffff 0000 0001 0100 0000 0037 6ef9 24
+```
+
+Injecting this modified IHDR into the provided minimal PNG yields:
+
+```
+8950 4e47 0d0a 1a0a 0000 000d 4948 4452 7fff ffff 0000 0001 0100 0000 0037 6ef9 24 0000 000a 4944 4154 7801 6360 0000 0002 0001 7375 0118 0000 0000 4945 4e44 ae42 6082
+```
+
+**Note**: This crafted input is strictly hypothetical, aimed at illustrating the understanding of CVE-2018-13785's exploitation mechanism. In reality, successfully exploiting the vulnerability would involve ensuring the rest of the PNG, including other chunks like IDAT, properly comply with both the bizarre dimensions and the PNG specification to avoid being rejected as corrupt.
+
+Additionally, such manipulations for exploitation purposes without proper authorization or ethical intent could be illegal and unethical. It's crucial to conduct security research within legal and ethical boundaries and always with the intention of improving security.

@@ -1,0 +1,16 @@
+The root cause of CVE-2017-16828 is an integer overflow issue in the handling of augmentation data length when reading an ELF file using the GNU Binutils, specifically within the `display_debug_frames` function in `dwarf.c`. This overflow can lead to a heap-based buffer over-read, potentially causing a denial of service (application crash) or potentially allowing an attacker to have an unspecified impact.
+
+Understanding the components involved:
+
+1. **Augmentation Data Length**: In the context of ELF files and DWARF debugging data, augmentation data can provide additional information in a Common Information Entry (CIE) or Frame Description Entry (FDE). The length of this data must be accurately tracked to safely parse and display the debug information.
+
+2. **Integer Overflow**: When the augmentation data length exceeds the maximum value that can be stored in the data type being used (`unsigned long` in this case), an overflow occurs. Overflowing can cause the program to compute an incorrect memory buffer size, potentially leading to buffer over-reads when the program tries to access or display this augmentation data.
+
+3. **Buffer Over-read**: If the calculated size of the augmentation data is larger than the actual allocated buffer (due to the overflow), the program might try to read beyond the limits of the buffer. This can lead to crashes (denial of service) due to invalid memory access or, in some cases, could be exploited to achieve code execution by reading sensitive information from adjacent memory locations.
+
+4. **Patch Analysis**: The patch addresses the issue by:
+   - Changing the data type for `augmentation_data_len` from `unsigned long` to `bfd_size_type`. This is a more suitable data type designed to handle sizes and offsets within the Binary File Descriptor (BFD) library, potentially offering a wider range of safe, representable values.
+   - Introducing checks for integer overflow when computing and testing the length of augmentation data. These checks ensure that the program does not proceed with flawed assumptions about the memory layout, preventing the conditions that could lead to a buffer over-read.
+   - Adding a new function, `display_augmentation_data`, to centralize and safely handle the printing of augmentation data, further encapsulating and isolating the correction logic.
+
+The steps taken in the patch both correct the immediate integer overflow vulnerability and contribute to more robust and maintainable handling of ELF files and DWARF debugging information within GNU Binutils.

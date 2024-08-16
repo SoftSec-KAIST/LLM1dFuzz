@@ -1,0 +1,12 @@
+The root cause of CVE-2019-19923 can be attributed to the mishandling of specific scenarios involving `SELECT DISTINCT` combined with a `LEFT JOIN` where the right-hand side is a view, within the `flattenSubquery` function in `select.c` of SQLite version 3.30.1. This functionality aims to optimize query execution by flattening subqueries under certain conditions, thus combining the results of the outer query with those of the subquery in a more efficient manner. However, there were cases where these optimizations did not account for specific nuances related to the use of `SELECT DISTINCT` and `LEFT JOIN`.
+
+The bug leads to two primary issues:
+
+1. Accessing stale result registers when an index scan is performed on a table within a view on the right-hand side of the `LEFT JOIN`, resulting in incorrect results being returned to the user.
+2. A possibility of invoking an `OP_IfNullRow` operation on an unopened table, which could result in a null pointer dereference, causing the application to crash.
+
+The root cause is essentially a failure to correctly manage the conditions under which query flattening optimizations are applied. Specifically, the original code did not adequately prevent query flattening when the outer query was marked as `DISTINCT`. This oversight could lead to scenarios where the database engine would mismanage memory accesses or operation calls due to the incorrect assumptions about the query's structure and state, thus causing incorrect results or crashes.
+
+The patch addresses this issue by adding an additional condition that explicitly prevents query flattening if the outer query uses `SELECT DISTINCT`. This is done by including a check `(p->selFlags & SF_Distinct)!=0` to the list of conditions under which query flattening is disallowed for a `LEFT JOIN`. This additional check ensures that the optimization logic correctly identifies and excludes cases where applying query flattening in conjunction with `SELECT DISTINCT` and `LEFT JOIN` could lead to the aforementioned issues. 
+
+By doing so, the patch corrects the logic used to determine when it is safe to apply query flattening, thus preventing the incorrect execution paths that led to incorrect results and null pointer dereferences.

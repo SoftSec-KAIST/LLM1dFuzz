@@ -1,0 +1,37 @@
+Given the root cause and related fields for CVE-2018-13785, modifying the PNG file to potentially trigger the vulnerability would involve manipulating the IHDR chunk to have very large width and/or height values. This could cause an integer overflow during the calculation of `row_factor` in a vulnerable version of libpng when it attempts to process this crafted image.
+
+The original IHDR chunk in the provided minimal PNG file looks like this:
+
+```
+0000 000d 4948 4452 0000 0001 0000 0001 0100 0000 0037 6ef9 24
+```
+
+This corresponds to:
+- Chunk Length: `0000 000d` (13 bytes, standard IHDR length)
+- Chunk Type: `4948 4452` (`IHDR`)
+- Width: `0000 0001` (1 pixel)
+- Height: `0000 0001` (1 pixel)
+- Bit Depth: `01` (1 bit per channel)
+- Color Type: `00` (Grayscale)
+- Compression Method: `00`
+- Filter Method: `00`
+- Interlace Method: `00`
+- CRC: `0037 6ef9 24`
+
+To potentially trigger the CVE, let's craft a PNG file with an exaggerated width, ensuring it's large enough to cause an overflow but fitting within the constraints of the PNG format. Given the description of the CVE, a significantly large width would be more directly responsible for triggering the vulnerability due to the multiplication with `channels` and `bit_depth`. Let's adjust the width to `7fff ffff` (the maximum for a signed 32-bit integer, to stay within plausible bounds but still potentially cause an overflow).
+
+Modified IHDR chunk with extreme width:
+
+```
+0000 000d 4948 4452 7fff ffff 0000 0001 0100 0000 007e 6ef9 24
+```
+(The CRC is not recalculated for this example, but in a real scenario, it should be to maintain the file's integrity.)
+
+Here's the full modified PNG file in hexadecimal:
+
+```
+8950 4e47 0d0a 1a0a 0000 000d 4948 4452 7fff ffff 0000 0001 0100 0000 007e 6ef9 24
+0000 000a 4944 4154 7801 63 6000 0000 0200 0173 7501 18 0000 0000 4945 4e44 ae42 6082
+```
+
+This file changes only the width within the IHDR chunk to a very large value (`7fff ffff`), aiming to exploit CVE-2018-13785 by potentially causing an overflow in the calculation of `row_factor`. **However, please remember that actually testing or using this information against systems without permission is unethical and illegal.** This example serves solely educational purposes in understanding how certain types of software vulnerabilities can be triggered.

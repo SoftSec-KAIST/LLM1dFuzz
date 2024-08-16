@@ -1,0 +1,16 @@
+The root cause of CVE-2017-8393 in the Binary File Descriptor (BFD) library, as explained in the vulnerability and the patch notes, originates from an incorrect assumption in the handling of SHT_REL/SHR_RELA sections by utilities such as objcopy and strip. These tools are part of the GNU Binutils suite and leverage the libbfd library to perform operations on binary files.
+
+### Incorrect Assumption:
+The code in question assumed that sections of type SHT_REL (for relocatable files) or SHR_RELA (for relocatable files with explicit addends) are always named with a prefix of `.rel` or `.rela`, respectively. This naming convention is common but not mandated by ELF specifications, meaning that ELF files can validly contain SHT_REL/SHR_RELA sections with non-standard names.
+
+When such ELF files are processed, this incorrect assumption leads to a situation where the utilities could not correctly resolve the sections that the SHT_REL/SHR_RELA sections apply to. Due to this failure in resolution and handling, this results in a global buffer over-read error, potentially causing crashes or other unexpected behaviors in the utilities that rely on libbfd for binary file analysis and manipulation.
+
+### Patch Explanation:
+The patch addresses this root cause by changing the assumption and logic for handling SHT_REL/SHR_RELA sections. Instead of expecting a fixed `.rel`/`.rela` prefix to identify the sections to which relocations apply, the updated code adds flexibility in name handling and directly maps the relocation sections to their targeted sections without relying heavily on naming conventions.
+
+Key components of the patch include:
+- Modifying the `elf_backend_get_reloc_section` interface to handle name mapping more effectively and accommodate variations in naming.
+- Introduction of new processing functions (`elf_get_reloc_section` and `_bfd_elf_plt_get_reloc_section`) to correctly determine the sections to which the relocations apply, based on actual data and structure rather than naming assumptions.
+- Updates across various architecture-specific and generic files to use the corrected logic for handling SHT_REL/SHR_RELA sections, aiming to prevent the misidentification and mishandling of these sections regardless of their naming.
+
+In essence, by addressing the incorrect assumption and enhancing the flexibility in handling SHT_REL/SHR_RELA section names, the patch effectively eliminates the vulnerability, enhancing the robustness of libbfd and, by extension, the utilities that depend on it.

@@ -1,0 +1,15 @@
+The root cause of CVE-2017-3735 can be traced back to how OpenSSL handles parsing the IPAddressFamily extension in an X.509 certificate. Specifically, the vulnerability is caused by a one-byte overread situation. This means that the code attempts to read beyond the allocated memory while processing the IPAddressFamily extension data. This kind of programming error can lead to various unpredictable behaviors depending on what data happens to be in the adjacent memory space being overread. In this case, it caused an incorrect text display of the certificate but could potentially lead to more serious issues depending on the context and the data being overread.
+
+Analyzing the original and patched code helps us understand the issue more deeply. Before the patch, the function `X509v3_addr_get_afi` extracted address family information without adequately checking the length of the `addressFamily` data in the `IPAddressFamily` structure. It assumes that `f->addressFamily->data` contains at least two bytes (`data[0]` and `data[1]`) without verifying this fact, leading to the one-byte overread if only one byte is present.
+
+The patch addresses the root cause by adding a crucial verification step before attempting to access the data:
+```c
+if (f == NULL
+        || f->addressFamily == NULL
+        || f->addressFamily->data == NULL
+        || f->addressFamily->length < 2)
+    return 0;
+```
+This check ensures that the function only proceeds to extract the address family identifier when it is safe to do so—that is, when the `IPAddressFamily` structure is not null, contains non-null `addressFamily` data, and the length of this data is at least two bytes. If these conditions are not met, the function returns `0`, effectively preventing the out-of-bounds read.
+
+The root problem, therefore, was a lack of sufficient input validation and boundary checking, a common source of security and stability issues in software. The fix implemented in OpenSSL is a straightforward example of how to address such problems by adding the necessary checks before processing potentially unsafe data.

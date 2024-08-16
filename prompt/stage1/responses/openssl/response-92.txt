@@ -1,0 +1,13 @@
+The root cause of CVE-2017-3735 can be discerned as improper handling of input data, specifically an insufficient validation of the length of the `addressFamily` data within the `IPAddressFamily` extension of an X.509 certificate. This vulnerability led to a one-byte overread situation.
+
+Before the patch, the code presumed the presence of at least two bytes of data in `f->addressFamily->data` without verifying the length of the data available. This assumption could result in reading beyond the allocated buffer when the data's actual length was less than two bytes, hence the one-byte overread.
+
+Here's a breakdown of the root cause based on the provided information:
+
+- **Inadequate validation:** The original code did not check whether the `f->addressFamily->length` is less than 2, which is necessary to safely perform the operations that follow. Not validating this allows for situations where data could be improperly accessed if it is not of the expected length.
+
+- **Assumption of data availability:** The calculation `((f->addressFamily->data[0] << 8) | (f->addressFamily->data[1]))` assumes there are at least two bytes without confirming this precondition, leading to potential one-byte overread if only one byte (or none) is available.
+
+The patch fixes this vulnerability by introducing a precondition check that validates the `addressFamily` length before proceeding with the calculations. This check ensures that there are at least two bytes of data (`f->addressFamily->length < 2`) before attempting to read them, thus avoiding an out-of-bounds read and ensuring that the access is within the bounds of the allocated buffer.
+
+This change effectively ensures that the software behaves correctly even when handling specially crafted X.509 certificates that could previously exploit this vulnerability, thus correcting the root cause of CVE-2017-3735.

@@ -1,0 +1,9 @@
+The root cause of CVE-2018-19758 stems from a heap-based buffer over-read in the wav.c file, specifically within the `wav_write_header` function of libsndfile version 1.0.28. This vulnerability can lead to a denial of service (DoS) as a result of the software reading beyond the buffer limit.
+
+From the provided patch, it appears that the issue was addressed by correcting how the loop count variable is handled. Before the patch, there wasn't a safeguard to ensure that the loop count remains within a valid range, which could allow for the read operation to exceed the allocated buffer size.
+
+The patch introduces a change that ensures the `loop_count` value is masked with `0x7fff`, effectively ensuring that it cannot exceed the maximum value for a signed 16-bit number (32767). This is a critical fix because it prevents the function from attempting to read or write beyond the allocated memory space for an instrument loop count, which could otherwise lead to out-of-bounds memory access, causing a crash and resulting in a denial of service.
+
+Additionally, although not directly related to the buffer over-read issue, the patch includes a minor adjustment in the way `detune` is calculated, making the code more readable and consistent without altering its functionality. 
+
+The root cause, therefore, is the lack of a boundary check on the `loop_count` variable in the `wav_write_header` function, which the patch appropriately addresses by applying a sensible limit to ensure it stays within a safe range, preventing an over-read condition.

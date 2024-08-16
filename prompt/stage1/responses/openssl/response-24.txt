@@ -1,0 +1,7 @@
+The root cause of CVE-2017-3735 appears to be an insufficient validation of an `IPAddressFamily` extension's length before accessing its `addressFamily` data in an X.509 certificate. The original code did not check if the `addressFamily` field within the `IPAddressFamily` structure was at least two bytes long before attempting to read two bytes from its data. This oversight could lead to a one-byte overread beyond the allocated buffer when the code tried to combine two bytes into an address family identifier using bitwise operations. 
+
+Such a one-byte overread may seem minor, but in sensitive applications, even a small memory safety issue can lead to unpredictable behavior, information leakage, or provide an entry point for more sophisticated attacks.
+
+The patch corrects this by adding a condition to ensure that `f->addressFamily->length` is at least 2 bytes before attempting to read from it. This prevents the one-byte overread by ensuring that there are enough bytes in the `addressFamily` data to safely perform the bitwise operations needed to obtain the address family identifier.
+
+In summary, the root cause is a lack of proper input length validation before accessing memory, a common source of vulnerabilities in C and C++ applications where direct memory access is allowed without automatic bounds checking.

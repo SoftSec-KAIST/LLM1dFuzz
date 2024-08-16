@@ -1,0 +1,11 @@
+The vulnerability described by CVE-2017-8393 is related to the handling of ELF (Executable and Linkable Format) section headers, particularly the sections designated for relocation entries, identified by the section header types `SHT_REL` and `SHT_RELA`. The issue arises due to incorrect assumptions about the naming convention of these sections.
+
+In ELF files, each section has a type field in its header, which describes the nature of the section. The types `SHT_REL` and `SHT_RELA` are used for sections containing relocation entries, with the difference between them being that `SHT_RELA` sections include an explicit addend in each relocation entry, while `SHT_REL` sections do not.
+
+The specific fields in ELF related to invoking this vulnerability are:
+
+- **sh_type**: This field in the section header specifies the section's content and semantics. For the vulnerability in question, the sh_type values of `SHT_REL` and `SHT_RELA` indicate sections that contain relocation information. The incorrect assumption about the section names starting with .rel/.rela based on these sh_type values is what leads to the over-read issue described in CVE-2017-8393.
+
+- **Section Names (`sh_name`)**: Although the sh_name field, which contains the name of the section, is not directly cited in the CVE description, the vulnerability is related to how the code interprets these names based on the `sh_type` field. The code assumed that sections of type `SHT_REL` and `SHT_RELA` would have names starting with .rel or .rela, which is not necessarily true for all ELF files.
+
+The vulnerability stems from the handling (or mishandling) of these ELF section headers, specifically the assumptions made about the naming conventions based on the `sh_type` of `SHT_REL` and `SHT_RELA`, leading to a buffer over-read issue when those assumptions do not hold. The patch addresses this issue by changing how the section to which relocations apply is determined, no longer relying on name prefixes but instead handling name mapping more flexibly and accurately.

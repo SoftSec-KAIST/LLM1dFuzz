@@ -1,0 +1,13 @@
+The root cause of CVE-2017-16828 appears to be an integer overflow vulnerability within GNU Binutils' handling of ELF (Executable and Linkable Format) files, specifically in the way augmentation data length is processed in the `display_debug_frames` function in `dwarf.c`. This overflow could lead to incorrect computations of buffer sizes, leading to a heap-based buffer over-read and potentially a denial of service (application crash) or possibly other unspecified impacts when parsing maliciously crafted ELF files.
+
+The patch addresses this issue in several ways:
+
+1. **Changing Data Type for Length**: The type of `augmentation_data_len` was changed from `unsigned long` to `bfd_size_type`. This change likely ensures that the data type used to represent the length is more consistent with the actual sizes handled by the application, potentially offering a larger range of values to prevent overflows.
+
+2. **Introduction of Overflow Checks**: The updated code introduces checks to ensure that the calculated length of the augmentation data (`augmentation_data_len`) does not exceed the expected maximum size, which could indicate an attempt to cause an overflow. Specifically, comparisons are made against the maximum possible buffer size (`(bfd_size_type) (end - start)`) to ensure that the augmentation data length is not problematic.
+
+3. **Error Handling for Corrupt Data**: The patch improves error handling for cases where the augmentation data length is corrupt. It includes checks to prevent processing augmentation data if the calculated start of the data falls beyond the expected data range or if the length is negative, which would indicate data corruption. This is critical for preventing out-of-bounds reads.
+
+4. **Refactoring and Code Cleanup**: The patch also introduces a new function, `display_augmentation_data`, which encapsulates the logic for displaying augmentation data. This not only makes the code more modular and readable but also centralizes the handling of augmentation data, reducing the risk of similar bugs in multiple places.
+
+In summary, the root cause of the vulnerability was an improper handling of augmentation data lengths in ELF files that could lead to integer overflow and buffer over-read conditions. The patch addresses these issues by using an appropriate data type for the augmentation data length, adding checks to prevent processing of corrupt or suspiciously large augmentation data lengths, improving error handling, and refactoring the code for better maintainability.

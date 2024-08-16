@@ -1,0 +1,13 @@
+The root cause of CVE-2017-3735 is related to improper validation of an input's length before performing operations based on that length. Specifically, while parsing the IPAddressFamily extension in an X.509 certificate, the original code did not properly check if the `addressFamily` structure had sufficient data (`length`) before attempting to extract the Address Family Identifier (AFI) from the first two bytes of the `addressFamily->data`.
+
+In the vulnerable version, the code naively assumes that `f->addressFamily->data` contains at least two bytes (`data[0]` and `data[1]`) without verifying it. This assumption leads to the possibility of a one-byte overread if `f->addressFamily->data` is of length 1, or potentially more disastrous outcomes if `data` is NULL, as the code would still attempt to dereference it.
+
+The patch addresses this issue by explicitly checking that:
+1. `f` is not NULL.
+2. `f->addressFamily` is not NULL.
+3. `f->addressFamily->data` is not NULL.
+4. `f->addressFamily->length` is at least 2, ensuring that there are sufficient bytes to read.
+
+Only if all these conditions are met, the function correctly and safely computes the AFI by reading the first two bytes of `addressFamily->data`. This avoids any out-of-bounds reads and ensures that the operation is performed on valid, well-formed data.
+
+The root cause is a classic example of insufficient validation on input data leading to potential security vulnerabilities, in this case, a one-byte overread. This shows the importance of rigorously checking the size and existence of input data before accessing it, a principle that is crucial in secure programming practices to prevent a wide array of vulnerabilities.

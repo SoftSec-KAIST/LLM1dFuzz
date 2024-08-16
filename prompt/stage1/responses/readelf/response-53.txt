@@ -1,0 +1,13 @@
+The root cause of CVE-2017-16828 involves an integer overflow vulnerability in the function handling augmentation data within debug frames (in particular, the `display_debug_frames` function) when processing crafted ELF files in GNU Binutils's `dwarf.c`. This vulnerability could lead to a heap-based buffer over-read, potentially causing a denial of service (application crash) or possibly allowing for unspecified impacts.
+
+The vulnerability stems from mishandling the augmentation data length in ELF files. Specifically, the integer overflow can occur when an attacker provides a crafted ELF file that includes corrupted augmentation data with lengths that, when processed, could result in the application reading beyond the buffer allocated for the augmentation data. This over-read could corrupt memory or crash the application.
+
+The patch addresses this vulnerability by ensuring secure handling of the lengths of augmentation data. Changes include:
+
+1. **Use of `bfd_size_type` for `augmentation_data_len`:** This update in data type usage ensures that the variable used to store the length of augmentation data can properly handle the size and prevent integer overflow.
+
+2. **Improved Checks:** The patch adds checks for integer overflow conditions when handling `augmentation_data_len`. This includes validating that the length specified does not exceed what is legitimate and expected based on the ELF structure being read. If the augmentation data length is found to be incorrect or too long, it ensures that the parsing routine safely handles this condition, effectively preventing the overflow and subsequent read out-of-bounds.
+
+3. **Proper Output Handling for Large Data:** The `display_augmentation_data` function is introduced to manage the output of augmentation data, including safely handling potentially large amounts of data in a way that fits the output constraints (such as terminal width) and avoids misinterpretation of the data size that could lead to buffer over-read conditions.
+
+By these measures, the patch mitigates the risk of exploiting the integer overflow vulnerability to execute a denial of service attack or other unspecified impacts through crafted ELF files. This demonstrates a comprehensive approach toward handling input data sizes and memory management to enhance the security and stability of the software.

@@ -1,0 +1,9 @@
+The root cause of CVE-2019-19923 lies in how SQLite's `flattenSubquery` function in `select.c` handled certain uses of `SELECT DISTINCT` involving a `LEFT JOIN` where the right-hand side is a view. Precisely, the bug arose because the optimization logic for flattening subqueries did not properly account for the case where the outer query uses `DISTINCT`, and the query involves a `LEFT JOIN` with the right-hand side being a view. Such a scenario could lead to stale result registers being accessed, yielding incorrect results. Additionally, under these circumstances, an `OP_IfNullRow` opcode might be invoked on an unopened table, which would result in a NULL pointer dereference.
+
+The patch addresses this issue by adding an additional condition to prevent query flattening when the outer query uses `DISTINCT`. Specifically, the updated logic includes a new check in the list of conditions under which a subquery cannot be flattened:
+
+- `(3d) the outer query may not be DISTINCT.`
+
+By adding this condition, the optimization that attempts to flatten subqueries will not proceed if the outer query is distinct, thereby preventing the incorrect behavior and null pointer dereference from occurring.
+
+Before this fix, the logic did not account for the interaction between `SELECT DISTINCT` and `LEFT JOIN` when the right-hand side was a view, underestimating the complexity and potential side effects of query flattening in such scenarios. By recognizing and handling this specific case, SQLite enhances its stability and correctness for queries involving these constructs.

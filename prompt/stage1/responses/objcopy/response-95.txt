@@ -1,0 +1,11 @@
+The root cause of CVE-2017-8393 in the GNU Binutils 2.28 BFD library is an erroneous assumption in the handling of section names within the libbfd code, specifically in the functionality related to `objcopy` and `strip`. This incorrect assumption led to a global buffer over-read issue. The assumption was that section names for relocation sections (`SHT_REL` and `SHT_RELA`) always start with a `.rel` or `.rela` prefix. 
+
+This presumption was flawed, manifesting in a vulnerability where, under certain conditions, programs like `objcopy` and `strip` that rely on the libbfd library for binary analysis and manipulation could crash. This is because the code did not properly handle cases where relocation section names did not follow the expected naming convention, leading to potential buffer over-read scenarios.
+
+The patch to address this vulnerability involves significant changes in how relocation sections are identified and handled by libbfd. The specific changes in the patch include:
+
+- Modification of the `elf_backend_data` structure to update the `get_reloc_section` function. This change involves adjusting the function parameters and corresponding comments to indicate that the function should now handle relocation section names without the assumption of a `.rel` or `.rela` prefix.
+- Addition of new functions `_bfd_elf_plt_get_reloc_section` and `elf_get_reloc_section` to more accurately determine the section to which relocations apply, based on the actual names of the sections without making assumptions about the prefixes.
+- Updates to various files (`elf-bfd.h`, `elf.c`, `elf64-ppc.c`, and `elfxx-target.h`) to incorporate these changes and ensure that all backend functions are adapted to correctly map the names of relocation sections to their targets.
+
+This approach eliminates the original flaw by removing the incorrect assumption about section name prefixes and adding mechanisms to correctly identify and handle relocation sections based on actual section names provided in binary files. This fix is crucial for ensuring the stability and reliability of binary analysis and manipulation tools that depend on the libbfd library.

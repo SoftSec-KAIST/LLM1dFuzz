@@ -1,0 +1,10 @@
+The CVE-2020-24370 vulnerability is related to the handling of local variables in Lua, specifically in functions used to access these variables, such as `getlocal` and `setlocal`. From the provided patch information and description, we can deduce that this issue is related to the debug functionality in Lua.
+
+The `ldebug.c` file, as indicated by the file path in the patch, is part of the Lua core that deals with debugging tasks. Debugging in Lua involves functions that allow the inspection of Lua programs during their execution. Among these are functions to access the values of local variables used by a function at a given point in its execution.
+
+The issue arises in the context of:
+
+- Accessing local variables (`getlocal` and `setlocal` functionality) through the debug interface.
+- Handling of variable argument functions (`vararg`), as seen in the patch's focus on improving the checks around accessing vararg values with the `findvararg` function.
+
+So, to answer your question: The field in Lua related to invoking CVE-2020-24370 is the **debug interface**, specifically the part that deals with accessing local variables and variable arguments of functions. This interface is crucial for debugging tasks but was found to contain a negation overflow vulnerability that could lead to segmentation faults when handling specially crafted large indices for local variables.

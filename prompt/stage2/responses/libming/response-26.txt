@@ -1,0 +1,7 @@
+Given the corrected reason for CVE-2016-9827, where the root cause is that the 'readBytes' function does not ensure the parsed password is null-terminated, leading to a potential buffer over-read scenario, we can see how the specific SWF file content triggers this vulnerability.
+
+The field in an SWF file related to invoking this CVE is the Protect tag's Password field. In SWF files, the Protect tag is used to indicate that the SWF file should be protected from import and editing by unauthorized users. It can include a password that needs to be provided to unlock or edit the SWF file. However, based on the description and the patch provided for CVE-2016-9827, it's clear that the issue arises when libming incorrectly handles the parsing of this password data.
+
+The faulty behavior is corrected by changing the method used to parse the Protect tag's Password field from using `readBytes` (which reads raw bytes without ensuring null-termination) to `readString` (which reads data until a null-terminator is encountered or ensures null-termination of the read data), hence preventing the buffer over-read situation by ensuring that the password is treated as a null-terminated string.
+
+Therefore, it is the manipulation or malformed structuring of the Protect tag's Password field in an SWF file that can trigger CVE-2016-9827, leading to a denial of service via buffer over-read when processed by the vulnerable versions of libming.

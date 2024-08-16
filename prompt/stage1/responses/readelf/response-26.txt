@@ -1,0 +1,11 @@
+The root cause of CVE-2017-16828 is related to handling of augmentation data in ELF (Executable and Linkable Format) files. Specifically, the vulnerability arises from improper handling of integer overflow conditions, which can lead to heap-based buffer over-read and application crash when processing crafted ELF files with corrupt augmentation data.
+
+From the patch, we can see key changes:
+
+1. **Type Change for `augmentation_data_len`**: The type of the variable `augmentation_data_len` was changed from `unsigned long` to `bfd_size_type`. This change is critical because `bfd_size_type` is more suitable for handling size-related operations in a portable and safe manner across different platforms, which Binutils supports. The original `unsigned long` type might not be sufficient or safe for handling sizes that could lead to integer overflows on certain platforms.
+
+2. **Integer Overflow Checks**: The patch includes explicit checks for integer overflow conditions, particularly when testing `augmentation_data_len`. The added conditions ensure that the length of the augmentation data does not exceed the maximum possible size that can be safely handled, thereby preventing overflows.
+
+3. **Refactoring for Better Handling of Augmentation Data**: The addition of a new function, `display_augmentation_data`, abstracts the logic for displaying augmentation data. This not only makes the code more readable and maintainable but also centralizes the logic for handling augmentation data, making it easier to ensure that safety checks are consistently applied whenever augmentation data is processed.
+
+These changes address the root cause by ensuring that the processing of augmentation data in ELF files is done in a manner that prevents integer overflows and properly checks for potentially malicious data sizes. This approach effectively mitigates the risk of denial of service (DoS) attacks and other unspecified impacts that might arise from processing maliciously crafted ELF files.

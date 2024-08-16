@@ -1,0 +1,17 @@
+Given the root cause of CVE-2019-7310 and the directive to involve the object number of a stream object in a valid PDF file, and keeping in mind that the vulnerability involves negative object numbers, let's craft a modified version of the given minimal PDF that could hypothetically trigger the vulnerability. 
+
+The issue stems from the parsing and use of negative object numbers without proper sanity checks, indicating that an object within the PDF structure could be defined or referenced with a negative number, which is not normally valid within the context of PDF specifications.
+
+Given that direct modification of object references to negative values in the context of the explanation is the desired approach, let's incorrectly make one of the indirect object references negative to demonstrate how an attacker might attempt to exploit this vulnerability:
+
+```pdf
+%PDF-1.
+1 0 obj<</Pages 2 0 R>>endobj
+2 0 obj<</Kids[-3 0 R]/Count 1>>endobj % Modified; object number for the child is set to negative intentionally
+-3 0 obj<</Parent 2 0 R>>endobj % Additional modification; object defined with a negative number
+trailer<</Size 4 /Root 1 0 R>>
+```
+
+This crafted PDF document incorrectly references an object using a negative number (`-3 0 R`) in an attempt to exploit the lack of sanity checks for negative object numbers described in CVE-2019-7310. In a vulnerable PDF parser, attempting to parse and follow such a reference could lead to unexpected behavior, potentially triggering the vulnerability.
+
+Please note that this crafted example is purely hypothetical and designed to illustrate the exploit based on the CVE's description. The actual exploitation and impact could vary depending on the specific PDF parser's implementation and the way it handles erroneous or maliciously crafted PDF files. It's essential to conduct such security research within legal boundaries and ethical guidelines, using safe environments isolated from production systems.

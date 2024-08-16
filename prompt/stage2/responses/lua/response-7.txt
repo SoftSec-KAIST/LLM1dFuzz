@@ -1,0 +1,9 @@
+The field in Lua related to invoking CVE-2020-24370 is related to accessing local variables and varargs (variable arguments) within a function. Specifically, the vulnerability is triggered through the handling of variable arguments with the use of the `getlocal` and `setlocal` functions as demonstrated by the misuse of negative indices.
+
+In Lua, functions can accept a variable number of arguments, and these are accessible within the function through the special syntax `...`. The issue described by CVE-2020-24370 involves the incorrect calculation of positions (`pos`) when accessing these variable arguments (`varargs`) using negative indices. The vulnerability lies in the improper negation and subsequent overflow that occurs when the provided index is excessively large in magnitude but negative, for example, when using an index like `-2^31`.
+
+Therefore, the specific field in Lua related to this CVE involves:
+- The handling of variable arguments (`varargs`) within functions.
+- The internal implementation of `getlocal` and `setlocal` API functions, which allow for inspection and modification of the values of local variables at runtime, including accessing variable arguments using negative indices.
+
+Given this, developers or users invoking `getlocal` and `setlocal` with large negative indices on varargs could inadvertently trigger this vulnerability, leading potentially to a segmentation fault due to memory corruption from out-of-bounds memory access. The patch addresses the root cause of this issue by correctly handling these cases, preventing the possibility of negation overflow.

@@ -1,0 +1,7 @@
+The CVE-2017-3735 vulnerability is related to the way OpenSSL parses the IPAddressFamily extension in an X.509 certificate, specifically involving an out-of-bounds read issue. The field in DER (Distinguished Encoding Rules) format directly linked to invoking this CVE is the `addressFamily` data within the IPAddressFamily extension.
+
+In an X.509 certificate, extensions allow for various additional features and information to be encoded. The IPAddressFamily extension is used to indicate support for specific address families (e.g., IPv4, IPv6) within certificate policies. The `addressFamily` field within this extension specifies the type of address family being described and is expected to contain at least two bytes of data indicating the Address Family Identifier (AFI).
+
+The vulnerability arises when the OpenSSL library parses this DER-encoded `addressFamily` field without adequately verifying that its length is sufficient to avoid reading beyond the allocated buffer. The patch for this vulnerability specifically checks that `f->addressFamily->length` is at least two bytes to ensure that the subsequent operation of reading the AFI value does not result in an out-of-bounds read.
+
+By ensuring the DER-encoded `addressFamily` field in the IPAddressFamily extension is properly checked for sufficient length before reading the AFI value, the patched OpenSSL versions avoid this vulnerability.

@@ -1,0 +1,13 @@
+The root cause of CVE-2017-16828 in GNU Binutils 2.29.1 appears to be related to the handling of augmentation data within ELF files, specifically within the Debugging with Attributed Record Formats (DWARF) debug information. The core issue is an integer overflow vulnerability that arises when processing augmentation data lengths in ELF binaries with corrupt augmentation data.
+
+From the supplied patch, we can observe the following key points that lead to the diagnosis of the root cause:
+
+1. **Change of Data Type for `augmentation_data_len`:** The data type for storing the length of augmentation data (`augmentation_data_len`) was changed from `unsigned long` to `bfd_size_type`. This change seems to address issues related to integer overflow by using a type that is more suitable for the storage of sizes and is likely larger or more appropriately defined to handle the data lengths encountered in practice.
+
+2. **Integer Overflow Check:** The patch introduces additional checks for integer overflow conditions when working with augmentation data lengths. Specifically, it ensures that the augmentation data length does not exceed what would be feasible within the bounds of the section being read, preventing scenarios where an attacker could specify an improperly large value intending to cause an overflow or a buffer over-read. This is achieved by comparing the augmentation data length to the available space (`end - start`) and handling cases where the specified length is inappropriately large.
+
+3. **Introduction of `display_augmentation_data` Function:** A new function, `display_augmentation_data`, was added, which likely aims to centralize and standardize the printing of augmentation data. While this change is more about code organization and clarity, it's worth noting as part of the overall effort to tidy up augmentation data processing, making it easier to avoid and check for overflow conditions.
+
+The presence of this vulnerability means that attackers could craft ELF files with specific corrupt augmentation data that, when processed by tools from GNU Binutils (such as objdump or readelf), could lead to a denial of service (application crash) or potentially other unspecified impacts. This could be due to attempting to read or process data from outside the intended memory bounds, triggered by the overflow and incorrect handling of length variables.
+
+Correcting this vulnerability involved both ensuring the correct data type sizes for handling file contents and adding robust validation for the length of data segments being processed, thus preventing the exploitation of integer overflow conditions.

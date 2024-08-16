@@ -1,0 +1,17 @@
+The root cause of CVE-2017-16828 in GNU Binutils 2.29.1, as described, involves an integer overflow and a subsequent heap-based buffer over-read in the handling of ELF (Executable and Linkable Format) files. Specifically, this vulnerability is related to the handling of dwarf debug information in such files.
+
+Looking at the patch provided:
+
+1. **Integer Overflow**: The issue stems from the usage of an incorrect data type (`unsigned long`) for the `augmentation_data_len` variable, which is supposed to hold the length of a section of the debug data. An integer overflow could occur if a crafted ELF file contains augmentation data length values that are too large for the variable to store correctly. This is critical in contexts where arithmetic operations are performed on such values, leading to incorrect computations and boundaries for memory allocations and access.
+
+2. **Heap-based Buffer Over-read**: Following the integer overflow, the incorrect length value could lead to a buffer over-read. This happens when the program reads data beyond the allocated memory heap buffer based on the corrupted `augmentation_data_len` value. This could cause the application to crash (a denial-of-service condition) or potentially lead to further unspecified impacts, which might include leaking of sensitive information from memory or enabling an attacker to execute arbitrary code depending on the nature of the over-read data and the application's memory state.
+
+The patch addresses these issues by:
+
+- Changing the data type of `augmentation_data_len` from `unsigned long` to `bfd_size_type`. This change ensures that the variable can correctly represent the size of data being handled, thus avoiding the overflow.
+
+- Introducing bounds checking and proper validation of `augmentation_data_len` against the actual size of the buffer (`end - start`). This prevents reading beyond the allocated buffer, mitigating the risk of a buffer over-read.
+
+- Adding the function `display_augmentation_data` to standardize how augmentation data is displayed, with proper handling of the data length and ensuring that the output respects the buffer boundaries.
+
+Overall, the root cause involves inadequately handling and validating external input (in this case, the length of augmentation data in an ELF file), leading to integer overflows and improper memory access. The patch corrects these by adjusting data types and adding validation checks to ensure memory operations are performed safely and within the bounds of allocated buffers.

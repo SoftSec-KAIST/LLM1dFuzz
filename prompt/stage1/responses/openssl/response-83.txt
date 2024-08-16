@@ -1,0 +1,11 @@
+The root cause of CVE-2017-3735 is related to an improper bounds check when OpenSSL processes an IPAddressFamily extension in an X.509 certificate. Specifically, the vulnerability arises from code that incorrectly assumes the presence and sufficient length of the `addressFamily` field within the `IPAddressFamily` extension structure. This assumption led to a scenario where the function could read beyond the allocated memory buffer by one byte when accessing the `addressFamily->data` array without verifying that the `addressFamily` structure contains enough data (`length < 2`). Such an out-of-bounds read could, under certain circumstances, result in application crashes or incorrect data being parsed and displayed from the certificate.
+
+To address this issue, the patch introduces a critical bounds check before accessing the `addressFamily->data`. It ensures that:
+- `f` (`IPAddressFamily`)
+- `f->addressFamily`
+- `f->addressFamily->data` are not NULL, and
+- `f->addressFamily->length` is at least 2 bytes long (sufficient to contain the AFI)
+
+If any of these conditions fail, the function now returns 0, effectively mitigating the risk of an out-of-bounds read by guaranteeing that there is sufficient data to process before proceeding with the extraction of the AFI (Address Family Identifier) from the provided `addressFamily->data`.
+
+The absence of this boundary check in the vulnerable versions of OpenSSL (all versions before 1.0.2m and 1.1.0g) made it possible to trigger the one-byte overread, leading to the CVE-2017-3735 vulnerability. The oversight in assuming the structure would always have a specific format or size without proper verification is a common root cause of such memory safety issues, emphasizing the importance of rigorous input validation and bounds checking in security-sensitive code.

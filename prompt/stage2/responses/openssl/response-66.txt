@@ -1,0 +1,5 @@
+The CVE-2017-3735 vulnerability is related to the parsing of the `IPAddressFamily` extension in an X.509 certificate, specifically while handling the `addressFamily` field within this extension. The vulnerability can be invoked when parsing an X.509 certificate that contains an `IPAddressFamily` extension, where the `addressFamily` field's data length is insufficient (less than 2 bytes).
+
+The `addressFamily` field is part of the structure used to store information about address families (e.g., IPv4, IPv6) in a certificate's extension for IP constraints. The data length issue related to DER (Distinguished Encoding Rules) encoding comes into play because the DER format is used for encoding the X.509 certificates. If an attacker crafts a certificate with an `IPAddressFamily` extension that has an `addressFamily` field with less than the required length but is still permissible by the encoding rules, it would trigger the out-of-bounds read described in CVE-2017-3735.
+
+In summary, the `addressFamily` field within the `IPAddressFamily` extension of an X.509 certificate, when encoded in DER format with insufficient data length, is related to invoking this CVE.

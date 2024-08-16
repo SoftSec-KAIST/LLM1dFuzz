@@ -1,0 +1,11 @@
+The root cause of CVE-2018-13785 in libpng 1.6.34 stems from an incorrect calculation of `row_factor` in the `png_check_chunk_length` function, as outlined in the file `pngrutil.c`. This erroneous calculation could lead to an integer overflow when processing a specially crafted PNG file. The overflow, in turn, could result in a divide-by-zero error, leading to a denial of service (DoS) condition.
+
+To break it down:
+
+1. **Integer Overflow**: The calculation of `row_factor` did not correctly account for the potential size of the operands involved, especially considering factors like image width, number of channels, and bit depth. When these operand values are large enough, the product might exceed the maximum value that can be held by the data type assigned to `row_factor`, causing an overflow.
+
+2. **Divide-by-Zero**: Following this overflow, the incorrect `row_factor` could be used in subsequent calculations expected to divide by this factor. If `row_factor` calculations result in a zero due to overflow corrections or truncations, any division operation using it as the denominator could cause a divide-by-zero error. This type of error is particularly problematic because it is undefined behavior in many programming contexts and, in this case, leads to a crash or a denial of service condition.
+
+The patch addresses the issue by ensuring that the operands involved in the `row_factor` calculation are correctly handled. Changing the calculation to use the `size_t` data type for each operand ensures that the product does not overflow because `size_t` is typically a larger type designed to represent sizes of objects. Furthermore, this calculation carefully accounts for each aspect contributing to `row_factor`, including the image width, the number of channels, and whether the bit depth is greater than 8, adding necessary offsets and multipliers in a manner that respects the type's limits.
+
+By correctly calculating `row_factor` and preventing any potential overflow, the patch mitigates the issue, thus avoiding the divide-by-zero scenario and preserving the stability and security of applications that process PNG files using libpng.

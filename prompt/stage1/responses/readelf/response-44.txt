@@ -1,0 +1,20 @@
+The root cause of CVE-2017-16828 in GNU Binutils 2.29.1, as detailed in the description and patch, is an integer overflow vulnerability that can occur when processing a crafted ELF file. Specifically, the vulnerability lies in the handling of augmentation data length in the `display_debug_frames` function, which resides within `dwarf.c`. 
+
+### Technical Breakdown:
+
+1. **Integer Overflow**: The issue starts with an improper handling of the augmentation data length. Prior to the patch, the code used an `unsigned long` type for the `augmentation_data_len` variable. This data type might not be sufficient to represent large values correctly, especially on platforms where `unsigned long` is smaller than the size of data that could potentially be read from a malicious ELF file.
+
+2. **Heap-Based Buffer Over-read**: Due to the integer overflow, the program could misinterpret the size of the augmentation data, potentially leading to attempts to read beyond the allocated buffer. This can cause a heap-based buffer over-read, leading to a denial of service (application crash) as the program might try to access memory outside the buffer's boundary.
+
+3. **Denial of Service (DoS)**: By exploiting this vulnerability, remote attackers can craft an ELF file that when processed by GNU Binutils (more specifically, tools relying on `dwarf.c` for processing debugging information), could crash the application, resulting in a DoS.
+
+### The Patch:
+
+The patch addresses this issue in several ways:
+- **Data Type Change**: It changes the `augmentation_data_len` variable to use `bfd_size_type` instead of `unsigned long`. `bfd_size_type` is likely chosen because it is designed to properly handle sizes of objects in BFD (Binary File Descriptor) libraries, making it more suitable for representing data sizes in binary files securely.
+- **Overflow Check**: It adds checks to prevent integer overflow by ensuring that `augmentation_data_len` does not exceed the expected bounds. This is crucial in preventing the program from attempting to read beyond the buffer.
+- **Refactoring**: The patch introduces a new function `display_augmentation_data` to abstract the logic for displaying augmentation data. This not only improves code readability but also ensures the augmentation data's length is managed safely across different parts of the program.
+
+### Conclusion:
+
+In conclusion, the root cause of CVE-2017-16828 was an integer overflow vulnerability due to improper handling of augmentation data lengths in GNU Binutils' handling of ELF files. The provided patch addresses this flaw by ensuring proper data types are used for representing lengths and by adding checks to prevent overflow, thereby mitigating the risk of a denial of service or other potential impacts from exploiting this vulnerability.

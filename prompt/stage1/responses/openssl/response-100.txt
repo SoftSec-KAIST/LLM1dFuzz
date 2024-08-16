@@ -1,0 +1,14 @@
+The root cause of CVE-2017-3735 is an out-of-bounds read issue. This vulnerability arises due to the mishandling of parsing an IPAddressFamily extension in an X.509 certificate when accessing the addressFamily data within the IPAddressFamily structure. Specifically, the original code assumed that the `addressFamily` field and its `data` field were always properly set and contained at least two bytes (`data[0]` and `data[1]`) to be read for determining the address family identifier (AFI).
+
+However, there was an oversight since there was no explicit check to ensure that the `addressFamily` field's `length` was at least 2, which is required for reading two bytes without accessing memory out of the bounds of the `data` array. This could lead to an overread by one byte, potentially accessing memory adjacent to the intended data structure. This situation could result in either an application crash due to accessing an unmapped memory region or incorrect data being read and hence an incorrect text display of the certificate, depending on the contents of the adjacent memory and how it's processed later on.
+
+The essence of the problem lies in inadequate validation of input data lengths before processing them, which is a common root cause for many security vulnerabilities, including buffer overflows and out-of-bounds reads/writes.
+
+The patch addresses this root cause by adding a conditional check that returns 0 (indicating failure or inability to get the AFI) if:
+
+- The `IPAddressFamily` structure (`f`) is NULL,
+- The `addressFamily` field within the structure is NULL,
+- The `data` field within the `addressFamily` is NULL,
+- Or if the `length` of the `addressFamily` is less than 2 bytes,
+
+thereby ensuring that the subsequent operations to read the AFI data do not try to access out-of-bounds memory, effectively mitigating the vulnerability. This fix is a typical example of defensive programming, where checks are introduced to ensure that assumptions about data structures and their contents are valid before they are used.

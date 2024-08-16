@@ -1,0 +1,13 @@
+From the description of CVE-2017-3735 and analysis of the provided patch, the root cause of this vulnerability appears to be an oversight in boundary checking when parsing the IPAddressFamily extension in an X.509 certificate. Specifically, the original code did not properly check that the `addressFamily` field in an `IPAddressFamily` structure contained enough data before attempting to read from it. This could lead to a one-byte overread, potentially causing incorrect display of the certificate's details. 
+
+In the original code snippet, the length of `addressFamily->data` is assumed to be at least 2 bytes without explicit verification. When `addressFamily->data` contains fewer than 2 bytes, accessing `addressFamily->data[1]` results in reading beyond the allocated buffer, leading to undefined behavior and potentially exposing sensitive information or causing a crash.
+
+The patch addresses this vulnerability by explicitly checking that `f->addressFamily->length` is at least 2 bytes long before proceeding with the data extraction. By adding this condition:
+
+```c
+|| f->addressFamily->length < 2
+```
+
+the patch ensures that there is sufficient data to read, thus preventing the out-of-bounds read. The use of boundary checks before accessing buffer contents is a common and effective way to prevent such vulnerabilities, emphasizing the importance of validating all inputs and buffer lengths before use.
+
+To summarize, the root cause of CVE-2017-3735 is insufficient validation of buffer length before accessing buffer contents, leading to potential out-of-bounds read vulnerabilities. The provided patch addresses this by adding the necessary validation step.

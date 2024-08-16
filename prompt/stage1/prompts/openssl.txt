@@ -1,0 +1,43 @@
+Given the information about CVE-2017-3735, what do you think the root cause is?
+
+- Description
+
+While parsing an IPAddressFamily extension in an X.509 certificate, it is possible to do a one-byte overread. This would result in an incorrect text display of the certificate. This bug has been present since 2006 and is present in all versions of OpenSSL before 1.0.2m and 1.1.0g.
+
+
+- Patch
+
+commit 068b963bb7afc57f5bdd723de0dd15e7795d5822
+Author: Rich Salz <rsalz@openssl.org>
+Date:   Tue Aug 22 11:44:41 2017 -0400
+
+    Avoid out-of-bounds read
+
+    Fixes CVE 2017-3735
+
+    Reviewed-by: Kurt Roeckx <kurt@roeckx.be>
+    (Merged from https://github.com/openssl/openssl/pull/4276)
+
+    (cherry picked from commit b23171744b01e473ebbfd6edad70c1c3825ffbcd)
+
+diff --git a/crypto/x509v3/v3_addr.c b/crypto/x509v3/v3_addr.c
+index ef1d775ac9..c5183a1790 100644
+--- a/crypto/x509v3/v3_addr.c
++++ b/crypto/x509v3/v3_addr.c
+@@ -84,10 +84,12 @@ static int length_from_afi(const unsigned afi)
+  */
+ unsigned int X509v3_addr_get_afi(const IPAddressFamily *f)
+ {
+-    return ((f != NULL &&
+-             f->addressFamily != NULL && f->addressFamily->data != NULL)
+-            ? ((f->addressFamily->data[0] << 8) | (f->addressFamily->data[1]))
+-            : 0);
++    if (f == NULL
++            || f->addressFamily == NULL
++            || f->addressFamily->data == NULL
++            || f->addressFamily->length < 2)
++        return 0;
++    return (f->addressFamily->data[0] << 8) | f->addressFamily->data[1];
+ }
+
+ /*

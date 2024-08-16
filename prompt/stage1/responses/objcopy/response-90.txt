@@ -1,0 +1,13 @@
+The root cause of CVE-2017-8393 in the GNU Binutils 2.28 Binary File Descriptor (BFD) library, specifically affecting libbfd and tools like objcopy and strip, stems from an incorrect assumption in the handling of relocation sections. 
+
+Here's a breakdown of the root cause based on the vulnerability description and the provided patch:
+
+1. **Incorrect Assumption on Section Names**: The flaw originates from the erroneous belief that sections of type SHT_REL and SHT_RELA would always be named with prefixes `.rel` and `.rela` respectively. This assumption made the code vulnerable to a global buffer over-read error, as it did not handle cases where sections did not adhere to this naming convention properly.
+
+2. **Implementation Details**: Specifically, the vulnerability affects how objcopy and strip, among other tools that rely on libbfd, process these sections. Since these tools are widely used for manipulation and analysis of binary files (e.g., during compilation and linking), the flaw could lead to unexpected behavior, errors, or crashes when handling specially crafted binary files that do not follow the naming conventions expected by the flawed code.
+
+3. **Handling Relocation Sections**: The problem arises in the logic that determines the target of relocations, which is crucial for correctly interpreting and modifying binaries. The original implementation blindly skipped over the assumed `.rel`/`.rela` prefix to find the section to which relocations apply, leading to potential misinterpretations and buffer over-read scenarios if the actual section names did not conform to the expected pattern.
+
+4. **Patch Analysis**: The patch addresses this issue by removing the hardcoded assumption about section names and instead adds logic to more robustly determine the section to which relocation information applies, regardless of its naming. This involves changes to the `elf_backend_get_reloc_section` function and related logic to ensure that it can correctly map relocation sections to their target sections based on actual section names rather than assumed prefixes. It introduces a more flexible and safer way to handle relocation sections, thereby mitigating the risk of crashes and incorrect behavior when processing binaries.
+
+In summary, the root cause of CVE-2017-8393 was an incorrect and unsafe assumption about the naming convention of relocation sections in binaries, leading to a buffer over-read issue in libbfd. The patch rectifies this by implementing a more robust method for mapping relocation sections to their corresponding target sections, thus ensuring the safe and correct processing of binary files.

@@ -1,0 +1,17 @@
+The root cause of CVE-2017-16828 in GNU Binutils 2.29.1, as identified from the provided patch details, centers around an integer overflow problem when processing augmentation data length in ELF binaries with corrupt augmentation data. Specifically, the issue occurs in the handling of augmentation data length during the reading of a Common Information Entry (CIE) and Frame Description Entries (FDEs) within the DWARF debugging information in an ELF file.
+
+The core issue can be summarized as follows:
+
+1. **Type of `augmentation_data_len`**: The type used for `augmentation_data_len` was originally an `unsigned long`, which may not be capable of correctly representing the size of data blocks on all platforms, potentially leading to integer overflows when the length of the data block is exceedingly large or invalid. This was changed to `bfd_size_type`, which is more appropriate for representing sizes and addresses during binary file processing in a platform-independent manner.
+
+2. **Insufficient Validation**: Before the patch, there was inadequate validation of the `augmentation_data_len` value. Specifically, the code did not properly check for cases where `augmentation_data_len` was larger than the remaining data available from the current position to the end of the ELF section being parsed. This could result in an attempt to read beyond the bounds of the memory mapped for the ELF file, leading to a heap-based buffer over-read.
+
+3. **Integer Overflow in Checks**: The original code had the potential for an integer overflow in the condition checking if the `augmentation_data_len` exceeded the expected bounds, leading to incorrect validation and vulnerabilities to attacks involving crafted ELF files designed to trigger this overflow.
+
+The patch resolves these issues by:
+
+- Changing the type of `augmentation_data_len` to `bfd_size_type`.
+- Introducing additional safety checks for integer overflow when testing `augmentation_data_len` against the remaining data size.
+- Adding a dedicated function `display_augmentation_data()` to encapsulate the safe display of augmentation data, ensuring that the fixes and validations are consistently applied across all usages.
+
+As a result, these changes prevent attackers from exploiting the integer overflow vulnerability to cause a denial of service (DoS) via application crash or possibly execute arbitrary code through carefully crafted ELF files submitted to Binutils tools, such as `objdump`.

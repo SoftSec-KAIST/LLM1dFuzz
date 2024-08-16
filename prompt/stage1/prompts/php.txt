@@ -1,0 +1,30 @@
+Given the information about CVE-2019-11041, what do you think the root cause is?
+
+- Description
+
+When PHP EXIF extension is parsing EXIF information from an image, e.g. via exif_read_data() function, in PHP versions 7.1.x below 7.1.31, 7.2.x below 7.2.21 and 7.3.x below 7.3.8 it is possible to supply it with data what will cause it to read past the allocated buffer. This may lead to information disclosure or crash.
+
+
+- Patch
+
+commit f22101c8308669bb63c03a73a2cac2408d844f38
+Author: Stanislav Malyshev <stas@php.net>
+Date:   Sun Jul 7 17:01:01 2019 -0700
+
+    Fix bug #78222 (heap-buffer-overflow on exif_scan_thumbnail)
+
+    (cherry picked from commit dea2989ab8ba87a6180af497b2efaf0527e985c5)
+
+diff --git a/ext/exif/exif.c b/ext/exif/exif.c
+index e04290376c..aa272c1d2b 100644
+--- a/ext/exif/exif.c
++++ b/ext/exif/exif.c
+@@ -3892,7 +3892,7 @@ static int exif_scan_thumbnail(image_info_type *ImageInfo)
+        size_t          length=2, pos=0;
+        jpeg_sof_info   sof_info;
+
+-       if (!data) {
++       if (!data || ImageInfo->Thumbnail.size < 4) {
+                return FALSE; /* nothing to do here */
+        }
+        if (memcmp(data, "\xFF\xD8\xFF", 3)) {

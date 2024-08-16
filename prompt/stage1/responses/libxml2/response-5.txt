@@ -1,0 +1,14 @@
+The root cause of CVE-2017-9047 in libxml2 relates to improper buffer size checks within the function `xmlSnprintfElementContent` in `valid.c`, leading to a buffer overflow vulnerability. Specifically:
+
+1. **Calculation of `len`**: The variable `len` is assigned the initial length of the buffer `buf` using `strlen(buf)`. This calculation of `len` fails to account for concatenations that occur after its assignment, particularly when appending `content->prefix` and `content->name`.
+
+2. **Appending `content->prefix` and `content->name`**: When either the `content->prefix` or `content->name` is appended to `buf`, the checks meant to ensure that the concatenation does not exceed the buffer size (`size - len < ...`) mistakenly use `len` (the length of `buf` at a certain point in time) rather than recalculating the available space in the buffer after each concatenation. This oversight means the logic could allow writing beyond the allocated memory if the combined length of `content->prefix`, `content->name`, and other concatenated strings exceed `size`.
+
+3. **Insufficient space checks**: Before the adjustments, the space checks (`if (size - len < xmlStrlen(content->prefix) + 10)` and similar for `content->name`) only conditionally append a truncation indicator (" ...") but do not accurately prevent overflow for all cases. These conditions were not effectively preventing buffer overflow since they did not accurately calculate the remaining space in the buffer at each step of string concatenation.
+
+The **patch** addresses these issues by:
+- Adding a more precise calculation for the required space (`qnameLen`) that includes the length of `content->name`, `content->prefix`, and a potential colon (":") separator when `content->prefix` is not NULL.
+- Using this calculated `qnameLen` to check if the buffer has enough space left for the new concatenation. If not, it appends a " ..." to signal that the output has been trimmed to fit the buffer, effectively preventing a buffer overflow.
+- The patch ensures that at each point where a string concatenation could happen, the available space in `buf` is recalculated and checked against the size of the potential new content. This prevents the previous oversight where `len` was not recalculated after each modification of `buf`.
+
+By correcting the way available space in the buffer is calculated and verifying it before each concatenation, the patch fixes the buffer overflow vulnerability.

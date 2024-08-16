@@ -1,0 +1,9 @@
+The field in Lua related to invoking CVE-2020-24370 is related to the debug functionalities for accessing local variables and variable arguments (varargs). More specifically, the functions affected are `getlocal` and `setlocal`, as demonstrated by the usage example `getlocal(3,2^31)` provided in the CVE description.
+
+In Lua, `getlocal` and `setlocal` are part of the debugging API that allows inspecting and modifying local variables of a function at runtime. The vulnerability arises from how these functions handled large negative numbers as indices, which could cause a negation overflow and lead to a segmentation fault. These operations are typically used for debug purposes, such as examining function environments or changing variable values during debugging sessions.
+
+### Technical Perspective
+- **CVE-2020-24370** occurs due to the incorrect handling of indices in `ldebug.c` when manipulating local variables or accessing varargs through `getlocal` and `setlocal` debug functions. These functions enable reading from and writing to local function variables, which is a crucial part of Lua’s debugging capabilities.
+- The negation overflow problem and the segmentation fault happens when these debug functions attempt to access or modify local variables using indices that, when negated, exceed the bounds of representable values in the integer type used by Lua. This incorrect handling can then lead to access violations or incorrect memory access, manifesting as a segmentation fault.
+
+The field in Lua most closely related to invoking this CVE is, therefore, the debugging mechanisms associated with local variable and vararg access/modification (`getlocal`/`setlocal` within Lua's debugging API).

@@ -1,0 +1,10 @@
+The CVE-2018-13785 vulnerability in libpng 1.6.34 is invoked through the handling of PNG image properties, specifically in the calculation that involves the following fields:
+
+- **Width** of the image (`png_ptr->width`): This field indicates the width of the PNG image.
+- **Channels** (`png_ptr->channels`): Represents the number of color channels. For example, grayscale images have 1 channel, RGB images have 3 channels, and RGBA images have 4 channels.
+- **Bit Depth** (`png_ptr->bit_depth`): The bit depth per channel, which can influence the size of the row by determining whether to use 1 or 2 bytes per color component.
+- **Interlaced** (`png_ptr->interlaced`): Indicates whether the PNG image is interlaced or not. Interlacing affects the calculation by adding a constant value to the `row_factor`.
+
+When a PNG file with manipulated or specially crafted properties corresponding to these fields is processed, the erroneous calculation of `row_factor` in the `png_check_chunk_length` function could lead to an integer overflow. This overflow, in turn, may result in a divide-by-zero error when the software attempts to calculate memory allocation requirements for processing the image, leading to a denial of service (DoS) condition.
+
+Therefore, while the vulnerability itself is triggered within the software's processing logic, the essential fields related to invoking this CVE from a PNG file are its width, number of channels, bit depth, and whether it is interlaced. These fields directly influence the calculation that was found to be vulnerable before being patched.

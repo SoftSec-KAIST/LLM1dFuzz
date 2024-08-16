@@ -1,0 +1,7 @@
+Based on the correction and focusing on the provided patch details for CVE-2016-9827, if the root cause is that the `readBytes` function does not ensure the parsed password is null-terminated, then this issue specifically pertains to how the Protect tag's Password field is handled within SWF files.
+
+The Protect tag in SWF files is utilized to restrict access or modifications to the file unless a password, if provided, is entered. This mechanism is typically used to help secure SWF content from unauthorized editing. In the context of this CVE, when `readBytes` was used to parse the Protect tag's Password field in a SWF file, it did not enforce the inclusion of a null terminator at the end of the parsed password. This oversight could lead to a buffer over-read scenario, as the application might continue reading adjacent memory looking for a null terminator that was expected but not present.
+
+The switch to using `readString` in the patch indicates a move to a safer parsing method that ensures string data (including the Protect tag's Password) is null-terminated, preventing the buffer over-read vulnerability by correctly delineating the end of the password string.
+
+Therefore, the specific field in SWF files related to invoking CVE-2016-9827 is the Password field associated with the Protect tag. The vulnerability arises from improperly handling this field by failing to ensure the data read as the password is properly null-terminated, which could lead to unauthorized memory access through a buffer over-read, potentially causing a denial of service.

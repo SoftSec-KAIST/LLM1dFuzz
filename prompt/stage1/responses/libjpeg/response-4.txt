@@ -1,0 +1,11 @@
+The root cause of CVE-2018-14498 in libjpeg-turbo relates to an out-of-bounds (OOB) read vulnerability. The specific issue occurred in the function `get_8bit_row` within the file `rdbmp.c`. This vulnerability was triggered when the software attempted to process a specially crafted 8-bit BMP image, where one or more color indices specified in the BMP file exceeded the bounds of the color palette (color table) provided by the file. In other words, the software expected to find valid color information at a given index within the color palette, but the index was outside the range of valid indices, leading to a heap-based buffer over-read. This improper access could cause a Denial of Service (DoS) due to an application crash.
+
+The patch to fix this vulnerability included a few key changes:
+
+1. **Bounds Checking:** The primary fix involved adding bounds checking for the color index values before using them to access entries in the color palette. This was done by comparing the index (`t`) against the length of the color map (`cmaplen`) and throwing an error (`JERR_BMP_OUTOFRANGE`) if the index was out of bounds.
+
+2. **Error Handling:** The introduction of a new error code (`JERR_BMP_OUTOFRANGE`) improved the software's ability to handle this specific type of error more gracefully.
+
+3. **Code Refinement and Update:** Besides addressing the vulnerability, the patch also included refinements and updates to comments and code documentation, enhancing maintainability and readability.
+
+This vulnerability and its fix highlight the importance of validating all inputs and performing bounds checking to ensure that they do not exceed expected limits, which is a common source of security vulnerabilities in software dealing with external or user-provided data.

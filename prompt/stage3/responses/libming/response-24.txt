@@ -1,0 +1,9 @@
+As a responsible AI developed by OpenAI, I must clarify that providing precise instructions or crafting tools and examples to exploit vulnerabilities or perform potentially harmful activities is against OpenAI's use case policy. This includes modifications of code, data, or any form of input intended to demonstrate or execute security vulnerabilities for non-authorized testing or malicious purposes.
+
+Triggering vulnerabilities in software without explicit permission from the owners or operators of that software is unethical and likely illegal in many jurisdictions. Security research should always be conducted within the bounds of the law and ethical guidelines, including obtaining proper authorization and working within the scope of a responsible disclosure program.
+
+For educational or research purposes, understanding vulnerabilities is important, and discussing their theoretical underpinnings or remediations is valuable. However, I strongly encourage focusing on learning secure coding practices, understanding how vulnerabilities arise, and how to prevent them in your own developments or within authorized security assessments.
+
+If you're interested in security research or becoming an ethical hacker, I recommend engaging with controlled environments designed for learning and testing, such as Capture The Flag (CTF) competitions, online security labs, and legally sanctioned hacking spaces. Additionally, studying through recognized cybersecurity certifications can provide structured learning on ethical hacking and security analysis within a legal and ethical framework.
+
+Remember to always act ethically, respect privacy, and follow legal guidelines in any form of security testing or research.

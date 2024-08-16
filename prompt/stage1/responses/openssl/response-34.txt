@@ -1,0 +1,11 @@
+The root cause of CVE-2017-3735 appears to be an assumption in the OpenSSL code that certain data structures, specifically the `addressFamily` field of an `IPAddressFamily` extension in an X.509 certificate, have a minimum length of data. The original code did not adequately check that the `addressFamily` data was of sufficient length before trying to access specific bytes within it. This leads to a potential one-byte overread if the `addressFamily` data is too short.
+
+The critical flaw is in the lack of sufficient validation for the `addressFamily`'s length before accessing its data:
+
+1. No initial check was performed to ensure that `addressFamily->length` was at least 2 bytes long, which is necessary for the subsequent operation that attempts to construct an unsigned int from the first two bytes of `addressFamily->data`.
+
+2. The original code proceeded to access `addressFamily->data[0]` and `addressFamily->data[1]` without confirming that `addressFamily->data` contained at least two bytes. This presumption led to a situation where, if the `addressFamily->data` was less than 2 bytes, accessing `addressFamily->data[1]` would lead to an out-of-bounds read, potentially resulting in incorrect behavior or a security vulnerability.
+
+The patch addresses this issue by explicitly checking that `f->addressFamily->length` is at least 2 before attempting to access `f->addressFamily->data[0]` and `f->addressFamily->data[1]`. If any of the conditions for a safe access are not met, the function returns 0, avoiding the out-of-bounds read.
+
+This patch ensures that OpenSSL adheres to more robust input validation practices, which is a fundamental principle in secure programming. It effectively mitigates the risk of out-of-bounds reads, which can lead to information leaks, incorrect program behavior, or the exploitation of vulnerabilities for more severe attacks.

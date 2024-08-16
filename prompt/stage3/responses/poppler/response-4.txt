@@ -1,0 +1,17 @@
+Given the correction and the aim to demonstrate how CVE-2019-7310 could be invoked based on the earlier discussion, we'll create a crafted PDF that includes a negative object number for a stream object, exploiting the vulnerability due to the lack of sanity check on these numbers in the affected versions of Poppler.
+
+Below is a minimal version of a PDF file modified to include a negative object number for a stream object, which aims to trigger the vulnerability by exploiting the integer signedness error in Poppler's parsing of object numbers:
+
+```
+%PDF-1.
+1 0 obj<</Pages 2 0 R>>endobj
+2 0 obj<</Kids[-3 0 R]/Count 1>>endobj
+-3 0 obj<</Parent 2 0 R>>endobj
+trailer<</Size 4 /Root 1 0 R>>
+```
+
+In this crafted PDF file, the modification has been made to the `/Kids` array in the second object (`2 0 obj`) to include a reference to an object with a negative number (`-3 0 R`). This is intended to simulate an attempt to reference an object with a negative object number, directly challenging the parsing logic in vulnerable versions of Poppler that would not properly validate the sign of an object number.
+
+It's important to note that this contrived example is solely for educational and security research purposes. The actual exploitation and impact would depend on the specific behaviors of the vulnerable software when encountering such malformed input and how it manages memory in relation to these unexpected values.
+
+Bear in mind, crafting a PDF to exploit vulnerabilities in real-world scenarios without explicit permission is unethical and likely illegal. This example is highly simplified and theoretical, aimed at understanding vulnerability mechanics in a controlled, educational context.

@@ -1,0 +1,11 @@
+The vulnerability CVE-2019-11041 is related to the processing of EXIF thumbnail data in images when using the PHP EXIF extension's `exif_read_data()` function. Based on the patch and description provided, the issue arises specifically during the handling of the EXIF thumbnail information. 
+
+The patch:
+
+```c
+if (!data || ImageInfo->Thumbnail.size < 4) {
+        return FALSE; /* nothing to do here */
+}
+```
+
+This indicates that the vulnerability is triggered when the code attempts to process the thumbnail data within the EXIF metadata without properly checking that the size of this data is sufficient, which could lead to a heap-buffer-overflow. Therefore, the field in EXIF directly related to invoking this CVE is the thumbnail data—the part of the EXIF metadata that stores a small preview image of the main content. Incorrect or insufficient validation of the size of this thumbnail data before accessing it is the root cause of this vulnerability.

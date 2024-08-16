@@ -1,0 +1,11 @@
+The CVE-2018-13785 vulnerability is triggered during the processing of PNG files, specifically through the handling of certain fields related to the image's dimensions and color information. Based on the provided patch details, the fields involved in invoking this CVE include:
+
+1. **Width (`png_ptr->width`)**: This is a fundamental field providing the overall width of the PNG image. It is used in the calculation of `row_factor`, and an extraordinarily large value can contribute to the overflow condition.
+
+2. **Channels (`png_ptr->channels`)**: This field represents the number of color channels in the image (e.g., RGB images have 3 channels, RGBA images have 4 channels). The number of channels directly influences the data size for each row of the PNG image, affecting the `row_factor` calculation.
+
+3. **Bit Depth (`png_ptr->bit_depth`)**: This indicates the number of bits per component for the image. PNG supports bit depths from 1 to 16. This value impacts the calculation of `row_factor` by determining if each color channel should be counted as taking up more than one byte (`png_ptr->bit_depth > 8? 2: 1`).
+
+4. **Interlaced (`png_ptr->interlaced`)**: Whether the PNG is interlaced (e.g., using Adam7 interlacing). Interlacing affects the calculation by optionally adding to the `row_factor` due to the additional processing requirements for interlaced images.
+
+In essence, fields that are directly related to the image's size, color complexity, and storage technique are involved in invoking CVE-2018-13785 by contributing to the calculation that can result in an integer overflow and a subsequent divide-by-zero, leading to a denial of service through the improper handling of the `png_check_chunk_length` function.

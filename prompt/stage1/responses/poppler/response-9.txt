@@ -1,0 +1,9 @@
+Based on the provided information about CVE-2019-7310 and the patch made to resolve the issue, the root cause of the vulnerability is an integer signedness error within the `XRef::getEntry()` function in the file `XRef.cc`. 
+
+This particular error occurs because the application does not adequately handle cases where a negative index value is passed to the `XRef::getEntry()` function. In C++ and many other programming languages, integer variables can represent both positive and negative values. However, when an application expects only positive values and does not properly check or validate the input, passing a negative value can lead to unexpected behavior. 
+
+In this case, a negative index value could lead to a heap-based buffer over-read. A buffer over-read can happen when the application reads beyond the allocated buffer's boundary. This could either crash the application, leading to a denial of service, or potentially allow an attacker to read sensitive information from the process's memory space, depending on how the over-read data is used by the application.
+
+The patch addresses this vulnerability by adding a check at the beginning of the `XRef::getEntry()` function. This check uses the line `if (unlikely(i < 0)) {`, which defensively assumes that it's rare but possible for `i` (the index) to be negative. If `i` is found to be negative, the function returns a dummy XRef entry instead of attempting to access the XRef entries array with a negative index. This effectively prevents the heap-based buffer over-read that could be triggered by maliciously crafted PDF documents.
+
+In summary, the root cause of CVE-2019-7310 is an integer signedness error that led to a failure in adequately checking for negative index values, which could then cause a heap-based buffer over-read. The solution was to implement a check for negative indices and handle them in a manner that avoids unsafe memory access.

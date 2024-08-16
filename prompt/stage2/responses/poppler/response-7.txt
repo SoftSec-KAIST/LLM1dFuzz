@@ -1,0 +1,8 @@
+Given the clarification, the root cause of CVE-2019-7310 is indeed related to the handling of negative object numbers in PDF files without proper sanity checks. 
+
+In PDFs, indirect objects are identified by object numbers (among other components, such as generation numbers and the 'obj' keyword). The vulnerability in question gets triggered when these object numbers, which are supposed to be non-negative as per the PDF specification, are parsed and mistakenly allowed to be negative in Poppler's implementation. This oversight leads to a lack of validation for the sign of the object numbers, which in turn, could be exploited by specially crafted PDF documents to cause a denial of service (application crash) or potentially lead to other unspecified impacts by causing a heap-based buffer over-read.
+
+The field in PDF that is directly related to invoking this CVE would be the object number field of an indirect object reference. In a PDF document, objects are typically defined as indirect when they are referenced across the document and have an object number, a generation number, and the obj keyword. The object number is intended to uniquely identify indirect objects within a PDF file.
+
+The exploit would occur through crafted PDF files that include indirect object references with intentionally negative object numbers. These malicious values would, due to the integer signedness error, be processed without adequate validation by versions of Poppler before the vulnerability was patched. The patch effectively prevents the undesirable outcome by adding a check that ensures object numbers (indexes) are not negative before proceeding with fetching the corresponding XRef entry.
+

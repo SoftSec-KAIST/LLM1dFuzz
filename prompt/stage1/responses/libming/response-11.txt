@@ -1,0 +1,11 @@
+The root cause of CVE-2016-9827 appears to be an incorrect handling of input data from a crafted SWF (Shockwave Flash) file that leads to a buffer over-read situation in the listswf tool of libming 0.4.7. The `outputtxt.c` file's `_iprintf` function is directly affected.
+
+To understand the issue, let's break down the code changes in the patch:
+
+1. **Original Code**: The problematic part of the code was using `readBytes(f, length)` to read data from an SWF file. This function likely reads a specified number of bytes (`length`) from the file pointer `f`. 
+   
+2. **Issue**: When a SWF file is crafted such that the `length` parameter leads to reading beyond the buffer's actual allocated memory, a buffer over-read occurs. This happens because the original code does not adequately ensure that the `length` value is within the bounds of the allocated memory for the data it attempts to read. A buffer over-read might not immediately sound as dangerous as a buffer overflow, but it can lead to information leaks, crashes, and in some contexts, can be exploited to achieve code execution.
+
+3. **Patch**: The fix involves changing the method of reading input data from `readBytes(f, length)` to `readString(f)`. The key difference is likely in how `readString(f)` handles data—it probably reads characters from the file until a null-terminator is encountered, rather than reading a fixed number of bytes specified by a potentially untrusted or manipulated `length` value.
+
+4. **Conclusion**: The root cause of the vulnerability is the incorrect handling of input data from a potentially malicious SWF file, due to not properly validating or sanitizing the `length` parameter before using it in a buffer read operation. The patch addresses this by switching to a safer method of reading data, which inherently avoids using the unreliable `length` and thus mitigates the risk of a buffer over-read. This kind of vulnerability underscores the importance of carefully validating all external inputs, especially those utilized in memory operations, to prevent security vulnerabilities.

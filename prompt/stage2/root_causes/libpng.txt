@@ -1,0 +1,2 @@
+You are not correct.
+The root cause of this CVE is that the calculation 'PNG_UINT_32_MAX/row_factor' can lead to division by zero if the calculation of the variable 'row_factor' results in an overflow.

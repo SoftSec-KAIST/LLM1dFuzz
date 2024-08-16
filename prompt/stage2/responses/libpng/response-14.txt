@@ -1,0 +1,10 @@
+The vulnerability described in CVE-2018-13785 is related to the processing of Image Data Blocks (IDAT) in PNG files. Specifically, it involves the calculation of `row_factor` which directly depends on the fields from the PNG file header information, such as:
+
+- `png_ptr->width`: The width of the image, as specified in the IHDR (Image Header) chunk of a PNG file.
+- `png_ptr->channels`: The number of color channels. This depends on the color type of the image, which is also specified in the IHDR chunk. For example, a grayscale image has 1 channel, a truecolor image has 3 channels (red, green, blue), and a truecolor image with an alpha channel has 4 channels.
+- `png_ptr->bit_depth`: The bit depth per channel, which is another parameter specified in the IHDR chunk. PNG images can have bit depths of 1, 2, 4, 8, or 16 bits per channel.
+- `png_ptr->interlaced`: Although less directly tied to a single field, interlacing is specified in the IHDR chunk as well. PNG offers the option for an image to be interlaced using the Adam7 interlace method, which affects how image data is processed and stored.
+
+The crucial point of failure leading to the CVE is how the value of `row_factor`, which indirectly depends on the dimensions and color information of the image (as well as whether the image is interlaced), is calculated without appropriate checks for integer overflow. When processing a specially crafted PNG file with manipulated IHDR chunk values (especially width, bit depth, and color type), it could lead to an integer overflow in calculating `row_factor`, and subsequently, a divide-by-zero error, potentially triggering a denial of service as the application crashes or behaves unpredictably.
+
+Thus, various fields related to the image's properties within the IHDR chunk are at the heart of triggering this CVE, as incorrect handling or malicious manipulation of these fields can lead to the described vulnerability.

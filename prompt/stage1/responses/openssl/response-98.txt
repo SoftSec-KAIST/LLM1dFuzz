@@ -1,0 +1,7 @@
+The root cause of CVE-2017-3735 is an incorrect or inadequate validation of the length of an IPAddressFamily extension's `addressFamily` data before accessing it in the OpenSSL code. Specifically, the code prior to the fix did not check if the `addressFamily` object had sufficient length before proceeding to read its data. This led to a one-byte overread, which could potentially result in incorrect interpretation or display of the X.509 certificate's contents.
+
+Originally, the code assumed that the `addressFamily` was not null and that its data was available, directly proceeding to extract information from the first two bytes with the expression `((f->addressFamily->data[0] << 8) | (f->addressFamily->data[1]))` without verifying if there were at least two bytes available.
+
+The patch addresses this issue by adding a condition that checks if `f` (the IPAddressFamily structure), `f->addressFamily`, and its `data` are not null **and** making sure the `length` of `addressFamily` is at least 2 bytes (`f->addressFamily->length < 2`), thus ensuring there are enough data bytes to safely perform the bitwise operations without risking out-of-bounds memory access.
+
+This change prevents the out-of-bounds read by ensuring that data access operations are only performed when there is guaranteed to be sufficient data, thus addressing the potential for memory access violations or incorrect data interpretation that characterized CVE-2017-3735.

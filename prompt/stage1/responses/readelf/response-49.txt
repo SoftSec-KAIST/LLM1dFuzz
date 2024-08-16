@@ -1,0 +1,15 @@
+The root cause of CVE-2017-16828 involves multiple vulnerabilities associated with handling ELF files in GNU Binutils, specifically within the `display_debug_frames` function in `dwarf.c`. The critical issues identified are:
+
+1. **Integer Overflow:** The vulnerability arises from an integer overflow issue when processing augmentation data lengths from ELF binaries. This overflow is possible because the length of augmentation data was initially being handled using a type (`unsigned long` or similar) that could allow values larger than what can be accurately represented or stored. The result of this overflow could lead to incorrect calculations of buffer sizes or indices.
+
+2. **Heap-Based Buffer Over-Read:** Following the integer overflow, the program could end up reading beyond the bounds of allocated memory buffers. This is due to the logic that calculates the size and location of memory to read from based on the corrupted augmentation data length. When the program expects a different length than what is actually allocated, it could access memory beyond the intended buffer. This could lead to a crash due to accessing invalid memory areas, constituting a denial of service (DoS) condition.
+
+3. **Improper Verification of Data Lengths:** The vulnerability was exacerbated by insufficient validation of the augmentation data length. Before the patch, the code did not appropriately verify that the calculated length of the augmentation data was within safe boundaries before proceeding to use this length for memory operations.
+
+The patch addresses these issues by:
+- Changing the data type for `augmentation_data_len` to `bfd_size_type`, which is likely more appropriate for representing sizes and reduces the risk of overflow.
+- Adding checks for integer overflow conditions when computing or comparing augmentation data lengths.
+- Introducing `display_augmentation_data`, a function that includes logic presumably designed to handle augmentation data safely.
+- Enhancing the validation of augmentation data lengths to ensure they are within the expected bounds, thereby avoiding over-read scenarios.
+
+Therefore, the root cause is a combination of using an inappropriate data type for length representation, insufficient validation of input data lengths leading to integer overflow, and inadequate boundary checks that could result in buffer over-reads. The subsequent patch mitigates these issues by addressing these root causes directly.

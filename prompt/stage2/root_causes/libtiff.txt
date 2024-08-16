@@ -1,0 +1,2 @@
+You are not correct.
+The root cause of this CVE is that the hardcoded value of 'td->td_bitspersample' is used without a validity check.

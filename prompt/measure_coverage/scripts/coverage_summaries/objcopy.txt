@@ -1,0 +1,56 @@
+Seed 1:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 1.9% (2259 of 119192 lines)
+  functions..: 4.3% (194 of 4526 functions)
+  branches...: 1.2% (1053 of 86535 branches)
+
+Seed 2:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 0.6% (770 of 119192 lines)
+  functions..: 1.7% (77 of 4526 functions)
+  branches...: 0.4% (331 of 86535 branches)
+
+Seed 3:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 1.1% (1265 of 119192 lines)
+  functions..: 2.9% (133 of 4526 functions)
+  branches...: 0.6% (524 of 86535 branches)
+
+Seed 4:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 1.1% (1265 of 119192 lines)
+  functions..: 2.9% (133 of 4526 functions)
+  branches...: 0.6% (524 of 86535 branches)
+
+Seed 5:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 0.6% (668 of 119192 lines)
+  functions..: 1.6% (72 of 4526 functions)
+  branches...: 0.3% (273 of 86535 branches)
+
+Seed 6:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 0.6% (668 of 119192 lines)
+  functions..: 1.6% (72 of 4526 functions)
+  branches...: 0.3% (273 of 86535 branches)
+
+Seed 7:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 1.1% (1265 of 119192 lines)
+  functions..: 2.9% (133 of 4526 functions)
+  branches...: 0.6% (524 of 86535 branches)
+

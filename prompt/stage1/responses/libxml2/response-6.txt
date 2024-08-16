@@ -1,0 +1,15 @@
+The root cause of CVE-2017-9047 seems to hinge on incorrect buffer length calculations when concatenating strings in the `xmlSnprintfElementContent` function within libxml2's `valid.c`. Specifically:
+
+1. **Initial Length Calculation**: The vulnerability arises because the `len` variable, which stores the initial length of the buffer `buf`, is not updated after content (such as a prefix and the element name) is appended to the buffer. This leads to erroneous assumptions about the amount of space left in the buffer (`size - len`) for further writes.
+
+2. **Insufficient Space Checks**: Before appending the element's prefix and name to the buffer, the function performs a check to see if there is enough space left. However, due to using the stale `len` value, these checks do not accurately reflect the current state of the buffer. As a result, it's possible to append more data to the buffer than its allocated size, leading to a buffer overflow.
+
+3. **Indirect Buffer Overflow**: The buffer overflow itself is indirect because it relies on the `strcat` function to append data beyond the allocated memory size of the buffer. 
+
+The patch addresses these issues by:
+
+- Introducing a mechanism to calculate the total length (`qnameLen`) required for appending both the prefix (if present) and the name of the content, including an additional character for the separator in case a prefix is present.
+- Updating the checks for available buffer space to consider the newly calculated `qnameLen` plus a fixed additional buffer (10 characters are mentioned, likely for structural XML elements that might follow). This is to ensure that there is enough room not just for the current concatenation but also for any subsequent characters that may need to be appended to maintain the XML structure or indicate truncation ("...").
+- The updated checks are now based on the dynamic state of the buffer immediately before attempting to append new data, thereby preventing the possibility of a buffer overflow by ensuring the operation is aborted if the available space is insufficient.
+
+In summary, the root cause is the use of outdated buffer length information for space checks before appending data, which could lead to buffer overflow. The fix correctly calculates the required space based on the current state of the buffer and enforces stricter space checks before writing to it.

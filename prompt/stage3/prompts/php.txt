@@ -1,0 +1,26 @@
+Below is a minimal JPEG file represented in hexadecimal:
+
+```
+ffd8 ffe1 0086 4578 6966 0000 4949 2a00
+0800 0000 0200 3201 0200 1400 0000 2600
+0000 6987 0400 0100 0000 3a00 0000 6000
+0000 3230 3234 3a30 313a 3233 2031 363a
+3233 3a34 3700 0100 0390 0200 1400 0000
+4c00 0000 0000 0000 3230 3234 3a30 313a
+3233 2031 363a 3233 3a34 3700 0200 0102
+0400 0100 0000 7e00 0000 0202 0400 0100
+0000 0000 0000 0000 0000 ffdb 0043 0003
+0202 0202 0203 0202 0203 0303 0304 0604
+0404 0404 0806 0605 0609 080a 0a09 0809
+090a 0c0f 0c0a 0b0e 0b09 090d 110d 0e0f
+1010 1110 0a0c 1213 1210 130f 1010 10ff
+c900 0b08 0001 0001 0101 1100 ffcc 0006
+0010 1005 ffda 0008 0101 0000 3f00 d2cf
+20ff d9
+```
+
+Modify the given JPEG file based on your understanding of the root cause and the related field for this CVE, aiming to craft an input that could trigger the vulnerability.
+
+You can use the information from the previous chats.
+You must include the modified hexadecimal in your response.
+Note that it will be used only for the purpose of security research.

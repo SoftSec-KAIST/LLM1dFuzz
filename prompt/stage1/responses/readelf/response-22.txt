@@ -1,0 +1,17 @@
+The root cause of CVE-2017-16828 in GNU Binutils 2.29.1, as indicated by the patch and description, involves multiple issues related to the handling of augmentation data in ELF (Executable and Linkable Format) files:
+
+1. **Integer Overflow Problem**: The original code used an `unsigned long` data type for `augmentation_data_len`, which represents the length of augmentation data in a Debugging Information Entry (DIE). This choice was not sufficient to handle the size of data appropriately across different platforms, especially considering the variety and potential size of ELF files. An integer overflow could occur when excessively large augmentation data lengths are processed, leading to improper memory allocation sizes.
+   
+2. **Heap-Based Buffer Over-read**: Resulting from the integer overflow, the program could attempt to read beyond the allocated heap buffer. This situation arises when the calculated length of the augmentation data (after overflow) incorrectly informs the program that more data is available than actually is. Consequently, the program attempts to access memory beyond what was intended, leading to a Denial of Service (DoS) due to an application crash, or possibly other unspecified impacts if the memory accessed contains sensitive information or controls program flow.
+
+3. **Improper Validation of Augmentation Data Length**: Before the patch, the validation of `augmentation_data_len` against the actual size of the buffer (`end - start`) was insufficient. There were no checks to ensure that the length of the augmentation data did not exceed what is logically possible within the ELF file's structure, leading to the aforementioned vulnerabilities.
+
+The patch addresses these root causes as follows:
+
+- **Data Type Change for `augmentation_data_len`**: The data type for `augmentation_data_len` was changed to `bfd_size_type` from `unsigned long`. This change is significant because `bfd_size_type` is specifically designed to handle sizes in the Binary File Descriptor (BFD) library, which Binutils uses to manipulate binary files. It's tailored to be portable and sufficient in size to represent data lengths accurately across different platforms.
+
+- **Introduction of `display_augmentation_data` Function**: This new function ensures that augmentation data is displayed safely, handling potential issues with data size more gracefully. It also improves the readability and maintainability of the code by encapsulating the logic for displaying augmentation data into its own function.
+
+- **Enhanced Validation and Error Handling**: The patch adds checks to validate the `augmentation_data_len` more robustly, including ensuring the length is not negative or logically inconsistent with the positions within the ELF file. These checks help prevent integer overflows and buffer over-reads by ensuring that the length values used in memory operations are valid and within expected ranges.
+
+In summary, the root causes of CVE-2017-16828 stem from insufficient handling and validation of the lengths of augmentation data within ELF files, leading to integer overflows and buffer over-reads. The patch addresses these issues by improving data type choices, introducing better validation, and encapsulating related logic into a dedicated function.

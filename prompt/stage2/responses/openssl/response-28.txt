@@ -1,0 +1,7 @@
+The CVE-2017-3735 vulnerability is specifically related to the parsing of the IPAddressFamily extension in an X.509 certificate. The key field within the DER (Distinguished Encoding Rules) encoded data that triggers this vulnerability is the `addressFamily` field.
+
+In the context of DER encoding, which is a subset of ASN.1 (Abstract Syntax Notation One), X.509 certificates include several extensions that provide additional information about the certificate subject or issuer. The IPAddressFamily extension is used to specify address families (such as IPv4 or IPv6) and associated address information, applicable to scenarios involving IP addresses.
+
+The vulnerability arises when OpenSSL processes an X.509 certificate containing an IPAddressFamily extension. If the `addressFamily` field within this extension is improperly formatted or if the data length is shorter than expected (specifically, less than 2 bytes), the OpenSSL code could perform a one-byte overread. This is because the original code did not properly check the length of the `addressFamily` data before attempting to read two bytes from it.
+
+In summary, the field in DER related to invoking CVE-2017-3735 is the `addressFamily` field within the IPAddressFamily extension of an X.509 certificate. The vulnerability is triggered by insufficient validation of the length of data in this field before accessing it.

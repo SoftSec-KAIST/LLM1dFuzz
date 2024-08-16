@@ -1,0 +1,2 @@
+You are not correct.
+The root cause of this CVE is that the function 'readBytes' does not ensure the parsed password is null terminated.

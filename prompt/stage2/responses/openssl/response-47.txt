@@ -1,0 +1,7 @@
+The field in Distinguished Encoding Rules (DER) encoding - which is related to invoking CVE-2017-3735 - is the `addressFamily` field within the IPAddressFamily extension of an X.509 certificate. 
+
+DER is a binary encoding for data structures described by ASN.1 (Abstract Syntax Notation One). X.509 certificates use ASN.1 to describe the structure of the certificate. In the context of CVE-2017-3735, this vulnerability is triggered while parsing an "IPAddressFamily" extension, which includes an "addressFamily" field. This field is supposed to contain address family identifiers (AFIs) that denote the type of networking address the certificate is associated with (such as IPv4 or IPv6).
+
+The vulnerability specifically comes into play when the length of the data within the `addressFamily` field is not checked before attempting to read two bytes from it for constructing the AFI. If the `addressFamily` data is less than two bytes, the code would perform a one-byte overread, potentially causing incorrect processing or a leak of information from the process's memory if the out-of-bounds data is subsequently mishandled.
+
+Thus, the issue revolves around how the DER-encoded `addressFamily` field within the "IPAddressFamily" extension of an X.509 certificate is parsed and validated (or, prior to the fix, the lack thereof) in OpenSSL.

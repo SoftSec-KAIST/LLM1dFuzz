@@ -1,0 +1,17 @@
+The root cause of CVE-2017-16828 in GNU Binutils 2.29.1, as described and addressed in the patch, stems from an integer overflow vulnerability. This issue occurs when handling the augmentation data in a Common Information Entry (CIE) or a Frame Description Entry (FDE) within the ELF file's debug information (specifically in the display_debug_frames function in dwarf.c).
+
+Here are the primary aspects that contribute to this vulnerability:
+
+1. **Use of an Inadequate Data Type for Length**: Initially, the `augmentation_data_len` variable, which stores the length of the augmentation data, was an `unsigned long`. This type could be insufficient to properly represent the size of the data depending on how Binutils was compiled and the architecture it was running on. This incompatibility allowed for situations where extremely large values of this data could lead to integer overflows.
+
+2. **Inadequate Validation and Overflow Check**: The original code did not adequately check for overflow scenarios where the specified `augmentation_data_len` could result in reading beyond the bounds of the available data buffer (`end - start`). Such a scenario can lead to a buffer over-read, potentially leading to a denial of service (application crash) or even execution of arbitrary code if specific conditions outside of control (like specific memory layout) are met.
+
+The patch addresses these issues by making the following changes:
+
+- **Data Type Change**: It changes the type of `augmentation_data_len` from `unsigned long` to `bfd_size_type`. The `bfd_size_type` is more appropriate for representing sizes in a manner that is portable and consistent across different architectures and compiler implementations.
+
+- **Introducing Overflow Checks**: It includes additional checks to ensure that the `augmentation_data_len` value does not result in an overflow, particularly checking that it does not cause the pointer arithmetic to read beyond the available buffer. Also, it introduces a new function, `display_augmentation_data`, to safely print the augmentation data with appropriate checks and formatting.
+
+- **Error Handling for Corrupt Data**: It adds better error handling for scenarios where the augmentation data length is corrupt, including more informative warnings and ensuring that processing does not proceed with invalid data lengths.
+  
+Overall, the root cause is primarily an integer overflow issue arising from inadequate data type use and insufficient validation for external input (augmentation data length) that could lead to inappropriate memory access. The patch properly addresses these issues by introducing safer data types, consistent overflow checks, and better error handling mechanisms.

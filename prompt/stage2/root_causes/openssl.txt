@@ -1,0 +1,2 @@
+You are not correct.
+The root cause of this CVE is that the validity check for the 'f→addressFamily→length' variable is missing.

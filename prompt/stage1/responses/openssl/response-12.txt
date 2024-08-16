@@ -1,0 +1,11 @@
+The root cause of CVE-2017-3735 is related to how OpenSSL parses the IPAddressFamily extension in an X.509 certificate. Specifically, the vulnerability is caused by a one-byte overread situation. This issue arises from the fact that the original code does not properly check if the `addressFamily` field's `data` has a sufficient length before attempting to read two bytes from it. This is to construct the address family information, which requires reading two bytes to form an unsigned integer.
+
+Here's a breakdown of the problem and fix:
+
+- **Original Issue**: The original code attempted to extract the address family information by combining two bytes (`data[0] << 8 | data[1]`) directly without verifying if there were at least two bytes available in `f->addressFamily->data`. This results in a scenario where if the `data` length is less than 2, the code would attempt to read beyond the allocated memory for `data`, leading to a one-byte overread. This could potentially result in incorrect text display of the certificate and might have undefined behavior depending on what memory is read beyond the allocated buffer.
+
+- **Root Cause**: The root cause is a lack of validation for the length of the `data` array before accessing it. It assumes there are at least two bytes available, which might not always be the case.
+
+- **Patch**: The provided patch adds a check to ensure not only the presence of the `f`, `f->addressFamily`, and `f->addressFamily->data` but also verifies that the `f->addressFamily->length` is at least 2 bytes long before it proceeds to extract the address family information. This check effectively prevents the one-byte overread by making sure there are enough bytes to read, thereby avoiding out-of-bounds memory access.
+
+The fix correctly addresses the root cause by ensuring that the necessary conditions are met before accessing the memory, effectively mitigating the risk of out-of-bounds read and ensuring the software behaves as expected without inadvertently accessing memory outside of the intended bounds.

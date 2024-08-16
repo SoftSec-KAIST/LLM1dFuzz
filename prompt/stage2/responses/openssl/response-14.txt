@@ -1,0 +1,7 @@
+Based on the information provided in the previous discussions regarding CVE-2017-3735, the vulnerability stems from how OpenSSL handles the IPAddressFamily extension in an X.509 certificate. Specifically, the issue occurs while parsing the `addressFamily` field within this extension.
+
+In terms of DER (Distinguished Encoding Rules) encoding, which is used for encoding the ASN.1 specified data structures like those found in X.509 certificates, the relevant field is part of the ASN.1 structure for the IPAddressFamily extension. This extension contains an `addressFamily` field, which is expected to consist of at least 2 bytes that represent the address family identifier (AFI). The vulnerability occurs because of a failure to verify that this `addressFamily` field contains sufficient data (at least 2 bytes) before attempting to read from it.
+
+DER encoding is crucial here because the issue involves an improper handling of the encoded data. In DER, each field is encoded with its type, length, and value. If the `addressFamily` field's length is less than 2 but is attempted to be read as if it were at least 2 bytes, this leads to the one-byte overread vulnerability detailed in CVE-2017-3735.
+
+Therefore, while the direct field related to invoking CVE-2017-3735 is the `addressFamily` within the IPAddressFamily extension of an X.509 certificate, it's the handling of this field's DER-encoded data (specifically, ensuring it has an adequate length before reading it) that causes the issue.

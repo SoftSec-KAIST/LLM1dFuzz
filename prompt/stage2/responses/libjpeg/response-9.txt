@@ -1,0 +1,9 @@
+The field in the BMP format that is directly related to invoking CVE-2018-14498 is the color index field in an 8-bit (colormapped) BMP file. Specifically, the vulnerability is triggered when this color index exceeds the bounds of the BMP file's color palette, i.e., when one or more of the color indices is out of range for the number of palette entries.
+
+In a BMP file, color indices are used in 8-bit images (also known as colormapped images) to reference specific colors within a color palette (also known as a color table). Each color index corresponds to a color in the color palette, which is an array of color entries where each entry defines a color. For 8-bit BMP images, this means there can be up to 256 (2^8) different colors in the color palette.
+
+The size of the color palette (number of color entries it contains) is determined by the `biClrUsed` field if it's nonzero or inferred from the `bits_per_pixel` field otherwise (maximally 256 for 8-bit per pixel BMP files). An 8-bit BMP image stores the pixel data as indices into this color palette, where each byte represents a color index.
+
+The vulnerability CVE-2018-14498 occurs because the code handling these color indices did not properly check if an index was within the valid range of the color palette's size before attempting to access the corresponding color in the palette. As a result, a malformed BMP with color indices that exceed the actual size of the palette could cause the code to attempt to read beyond the bounds of the palette array stored in the heap, leading to a heap-based buffer over-read and hence a possible denial of service through application crash.
+
+The patch provided for this vulnerability adds checks to ensure that each color index read from the BMP file is within the valid range of the color palette (`if (t >= cmaplen) ERREXIT(cinfo, JERR_BMP_OUTOFRANGE);`) before it's used to access the palette, effectively mitigating the risk of out-of-bounds reads.

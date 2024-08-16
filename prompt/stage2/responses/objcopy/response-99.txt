@@ -1,0 +1,11 @@
+The CVE-2017-8393 vulnerability is specifically related to the handling of SHT_REL and SHT_RELA section types in ELF files, where these section types are intended for relocation information. The issue arises in the context of section names, which the vulnerable software assumed would always start with a .rel or .rela prefix.
+
+In the ELF (Executable and Linkable Format) format, each section of a binary has an associated type that describes its contents and semantics. The fields relevant to this CVE in the ELF specification are:
+
+- **sh_type**: This field in the section header describes the section's content and semantics. For this CVE, the problematic assumption was related to sections with `sh_type` set to `SHT_REL` or `SHT_RELA`, which indicate sections containing relocation entries. These entries tell the linker or loader how to modify symbol references in the executable or shared library.
+
+- **Section Name**: More specifically, the vulnerability was triggered by the handling of the section's name (not directly a field like `sh_type`, but part of the ELF structure). The software erroneously assumed that sections relevant to relocation (`SHT_REL` or `SHT_RELA`) would be prefixed with .rel/.rela in their names, which is not guaranteed by the ELF specification.
+
+The vulnerability could lead to a buffer over-read scenario because the software would incorrectly determine the section to which the relocation entries apply based on this naming assumption. Properly speaking, the impact was due to how these fields (`sh_type` for indicating relocation sections and the section names) were interpreted by the tools, leading to mishandling when the assumptions about naming conventions did not hold.
+
+Therefore, while the `sh_type` field indirectly relates to invoking this CVE by indicating a section's type as SHT_REL or SHT_RELA, the direct cause is the mishandling of sections based on their names, which is an operation external to the fields' intended use within the ELF specification.

@@ -1,0 +1,5 @@
+The root cause of CVE-2017-3735 appears to be inadequate input validation when parsing the IPAddressFamily extension of an X.509 certificate. Specifically, the original code did not properly check if the `addressFamily` structure's `data` field contained enough data before attempting to read two bytes from it to determine the "Address Family Identifier" (AFI). This lack of validation could lead to an out-of-bounds (one-byte overread) access if the `data` field contained less than two bytes. 
+
+The patch addresses this issue by adding a condition to ensure that the `addressFamily` has a `length` of at least two bytes before attempting to read from its `data` field to form the AFI. This prevents the out-of-bounds read by ensuring that there is sufficient data before proceeding with the extraction of the AFI, thus fixing the root cause of the security vulnerability by adding appropriate input validation checks. 
+
+In short, the root cause was the lack of validation checks on the length of the `addressFamily`'s `data` before attempting to read from it, leading to the possibility of reading beyond the allocated memory if the `data` was shorter than expected.

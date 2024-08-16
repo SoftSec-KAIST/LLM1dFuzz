@@ -1,0 +1,8 @@
+<!DOCTYPE root [
+<!ENTITY a "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...">
+<!ELEMENT root (el)>
+<!ELEMENT el (#PCDATA|el)*>
+]>
+<root>
+<el>&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;...;</el>
+</root>

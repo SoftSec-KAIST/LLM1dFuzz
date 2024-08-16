@@ -1,0 +1,80 @@
+Seed 1:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 2.3% (690 of 30548 lines)
+  functions..: 5.0% (57 of 1140 functions)
+  branches...: 1.4% (273 of 18949 branches)
+
+Seed 2:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 4.0% (1226 of 30548 lines)
+  functions..: 8.7% (99 of 1140 functions)
+  branches...: 3.0% (570 of 18949 branches)
+
+Seed 3:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 4.9% (1511 of 30548 lines)
+  functions..: 9.9% (113 of 1140 functions)
+  branches...: 3.8% (713 of 18949 branches)
+
+Seed 4:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 4.5% (1372 of 30548 lines)
+  functions..: 9.0% (103 of 1140 functions)
+  branches...: 3.5% (659 of 18949 branches)
+
+Seed 5:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 4.4% (1333 of 30548 lines)
+  functions..: 8.9% (102 of 1140 functions)
+  branches...: 3.3% (618 of 18949 branches)
+
+Seed 6:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 4.0% (1226 of 30548 lines)
+  functions..: 8.7% (99 of 1140 functions)
+  branches...: 3.0% (570 of 18949 branches)
+
+Seed 7:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 4.5% (1389 of 30548 lines)
+  functions..: 9.2% (105 of 1140 functions)
+  branches...: 3.5% (667 of 18949 branches)
+
+Seed 8:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 2.3% (688 of 30548 lines)
+  functions..: 5.0% (57 of 1140 functions)
+  branches...: 1.4% (272 of 18949 branches)
+
+Seed 9:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 4.0% (1226 of 30548 lines)
+  functions..: 8.7% (99 of 1140 functions)
+  branches...: 3.0% (570 of 18949 branches)
+
+Seed 10:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 4.1% (1263 of 30548 lines)
+  functions..: 8.9% (102 of 1140 functions)
+  branches...: 3.0% (569 of 18949 branches)
+

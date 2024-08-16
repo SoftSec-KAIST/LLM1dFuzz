@@ -1,0 +1,5 @@
+Apologies for the confusion in my previous explanation. Based on the patch and the specifics of CVE-2016-9827, not ensuring the parsed password is null-terminated indeed points to the issue within the handling of the Protect tag's password in SWF files.
+
+From the patch details, it's clear that the problematic function (before the fix) in question is involved with parsing the SWF Protect Tag. The SWF Protect tag is used to indicate that the SWF file should not be importable for editing by authoring tools unless the correct password (if any) is provided. The original code with `readBytes` likely expected a certain length for the password, but without ensuring a null terminator at the end of the password, substantial security issues such as buffer over-read could occur when the software processes this password.
+
+Therefore, the root cause is indeed the handling of the Protect tag's password without ensuring it’s null-terminated, and the field in SWF related to invoking this CVE is the Protect tag.

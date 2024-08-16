@@ -1,0 +1,17 @@
+The root cause of CVE-2017-16828 in the GNU Binutils `dwarf.c` code was an integer overflow vulnerability coupled with a heap-based buffer over-read issue. The vulnerability was triggered by the improper handling of ELF (Executable and Linkable Format) files, especially the way augmentation data lengths within the Debug Frames were processed.
+
+Here's how that vulnerability happened step-by-step:
+
+1. **Integer Overflow**: When GNU Binutils tried to read ELF files, the length of the augmentation data (part of the debugging information) was stored in a variable type (`unsigned long`) that could not properly represent the size of the data if it was too large. This could lead to integer overflow, where the actual data size exceeded the maximum value that the variable could hold, wrapping around and resulting in a much smaller size being recorded. 
+   
+2. **Heap-based Buffer Over-read**: Following the integer overflow, when Binutils attempted to read the augmentation data based on the incorrect length, it could read past the buffer designated for the ELF file's augmentation data. This is because it was operating under the assumption that the size of the data was smaller due to the overflow. This buffer over-read could lead to a Denial of Service (DoS) by crashing the application or, in some cases, might have allowed attackers to cause other unspecified impacts, such as execution of malicious code if they could control the memory layout sufficiently.
+
+The patch for this vulnerability introduces two primary fixes:
+
+1. **Safe Data Type for Size Variables**: It changes the data type for storing `augmentation_data_len` from `unsigned long` to `bfd_size_type`, which is designed to safely hold size values without overflow.
+
+2. **Overflow Check**: Before using `augmentation_data_len`, it adds a check to ensure that the length does not cause an integer overflow, specifically checking that it does not exceed what is available in the buffer (`end - start`).
+
+Additionally, the patch refactors the code to improve the handling and display of augmentation data, making the codebase more robust against similar issues in the future.
+
+The patch mitigates this vulnerability by ensuring that size calculations do not overflow and by validating the actual size of augmentation data against the remaining buffer size, thus preventing heap-based buffer over-reads.

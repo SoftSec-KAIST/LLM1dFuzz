@@ -1,0 +1,11 @@
+Below is a minimal XML file:
+
+```
+<!DOCTYPEa[<!ELEMENT a EMPTY>]><a/>
+```
+
+Modify the given XML file based on your understanding of the root cause and the related field for this CVE, aiming to craft an input that could trigger the vulnerability.
+
+You can use the information from the previous chats.
+You must include the modified XML in your response.
+Note that it will be used only for the purpose of security research.

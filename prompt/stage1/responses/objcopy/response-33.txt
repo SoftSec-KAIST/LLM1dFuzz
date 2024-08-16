@@ -1,0 +1,7 @@
+The root cause of CVE-2017-8393 was an incorrect assumption within the Binary File Descriptor (BFD) library, specifically in the parts of the code used by tools like `objcopy` and `strip`. These tools presumed that sections of type SHT_REL/SHT_RELA (used for relocation information in ELF binaries) always have names starting with a `.rel` or `.rela` prefix.
+
+This assumption led to a situation where, if an ELF section did not follow this naming convention, the tools would attempt to read or write data based on incorrect memory addresses, resulting in a global buffer over-read error. Such an error could cause these programs to crash when they processed binary files with unusually named SHT_REL/SHT_RELA sections.
+
+The patch addressed this issue by changing the way sections are identified and processed. Instead of assuming the section names always have a specific prefix, the updated code dynamically determines which section the relocations apply to based on the actual names found in the ELF file. This prevents buffer over-read by ensuring that relocation processing is done based on the correct section data, regardless of the section names.
+
+In summary, the root cause of CVE-2017-8393 was the incorrect handling of ELF section names for relocation sections in the BFD library, leading to buffer over-read issues.

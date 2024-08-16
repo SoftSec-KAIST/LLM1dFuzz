@@ -1,0 +1,41 @@
+<!DOCTYPE exploit [
+<!ELEMENT a0 (a1)>
+<!ELEMENT a1 (a2)>
+<!ELEMENT a2 (a3)>
+<!ELEMENT a3 (a4)>
+<!ELEMENT a4 (a5)>
+<!ELEMENT a5 (a6)>
+<!ELEMENT a6 (a7)>
+<!ELEMENT a7 (a8)>
+<!ELEMENT a8 (a9)>
+<!ELEMENT a9 EMPTY>
+<!ATTLIST a0 xmlns:prefix CDATA #FIXED "" >
+<!ATTLIST a1 xmlns:prefix CDATA #FIXED "" >
+<!ATTLIST a2 xmlns:prefix CDATA #FIXED "" >
+<!ATTLIST a3 xmlns:prefix CDATA #FIXED "" >
+<!ATTLIST a4 xmlns:prefix CDATA #FIXED "" >
+<!ATTLIST a5 xmlns:prefix CDATA #FIXED "" >
+<!ATTLIST a6 xmlns:prefix CDATA #FIXED "" >
+<!ATTLIST a7 xmlns:prefix CDATA #FIXED "" >
+<!ATTLIST a8 xmlns:prefix CDATA #FIXED "" >
+<!ATTLIST a9 xmlns:prefix CDATA #FIXED "verylongprefixthatmightoverflowbuffer" >
+]>
+<a0>
+  <a1>
+    <a2>
+      <a3>
+        <a4>
+          <a5>
+            <a6>
+              <a7>
+                <a8>
+                  <a9 prefix:a9=""/>
+                </a8>
+              </a7>
+            </a6>
+          </a5>
+        </a4>
+      </a3>
+    </a2>
+  </a1>
+</a0>

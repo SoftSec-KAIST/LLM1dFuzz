@@ -1,0 +1,14 @@
+The root cause of CVE-2017-16828 in GNU Binutils 2.29.1 was linked to two main issues in how the software processed ELF (Executable and Linkable Format) files:
+
+1. **Integer Overflow**: The software did not properly validate or handle sizes of certain data structures when processing ELF files, particularly in the handling of augmentation data in the `display_debug_frames` function within `dwarf.c`. The lack of proper validation and incorrect data type usage (`unsigned long` instead of `bfd_size_type`) led to an integer overflow scenario. This occurred because the size of the augmentation data (augmentation_data_len) could exceed the capacity of the variable storing it, especially on systems where the sizes of data types like `unsigned long` and pointers vary.
+
+2. **Heap-Based Buffer Over-read**: Following the integer overflow, the erroneous calculation of the size allowed for a heap-based buffer over-read. This meant that the program could attempt to read data beyond the allocated heap memory segment designated for the ELF file's augmentation data. This is dangerous as it might expose sensitive information stored in memory or, more likely, cause the application to crash due to attempting to access invalid memory addresses.
+
+The patch addresses these issues in several ways:
+
+- It changes the data type of `augmentation_data_len` to `bfd_size_type` instead of `unsigned long` in the `read_cie` and related functions. `bfd_size_type` is more appropriate for holding sizes because it adapts to platform-specific data sizes, reducing the risk of integer overflow.
+- It introduces a new function `display_augmentation_data` to properly handle and print augmentation data with consistency and better overflow checks.
+- It adds checks for integer overflow conditions when calculating sizes or differences of pointers within the memory allocated for ELF file processing. This prevents the software from proceeding with corrupted or maliciously crafted ELF files that could previously lead to over-reads or crashes.
+- The use of `bfd_signed_vma` for comparing signed values and ensuring that the logic correctly handles negative cases or exceptionally large values, which were not adequately checked before.
+
+By fixing the integer overflow vulnerability and ensuring that sizes are correctly validated and processed, the patched version prevents attackers from exploiting these vulnerabilities to cause a denial of service or possibly execute arbitrary code through crafted ELF files.

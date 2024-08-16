@@ -1,0 +1,55 @@
+Given the understanding of CVE-2018-13785's root cause and the related fields in the PNG file's IHDR chunk (width, color type, bit depth, and interlace method), crafting an input to potentially trigger the vulnerability involves modifying these fields to create a scenario where the bogus calculation of `row_factor` might overflow or produce an erroneous value leading to a divide-by-zero situation.
+
+The example hexadecimal represents a minimal PNG file. The IHDR chunk, where modifications are needed, starts after the initial 8-byte PNG signature (`89504E470D0A1A0A`), followed by the chunk length (`0000000D`) and the chunk type (`IHDR`). The fields within IHDR are as follows:
+
+- **Width**: 4 bytes
+- **Height**: 4 bytes
+- **Bit Depth**: 1 byte
+- **Color Type**: 1 byte
+- **Compression method**: 1 byte
+- **Filter method**: 1 byte
+- **Interlace method**: 1 byte
+
+The original IHDR chunk in the example is:
+
+```
+0000000D 49484452 00000001 00000001 01000000 00376EF9 24
+          [IHDR]     [Width]  [Height][BD CT CM FM IM]
+```
+
+Given the aim to potentially exploit the vulnerability, let's increase the width and select a color type and bit depth that would significantly increase the `row_factor` calculation, making the scenario optimal for an integer overflow or an anomalous calculation.
+
+Let's change:
+- Width to a large value (e.g., `0xFFFFFFF` for demonstration; remember real exploitation would require crafting specific values that cause an overflow without immediate detection).
+- Height to `0x00000002` (for simplicity and to meet the condition in CVE discussion).
+- Bit Depth to `16` (maximal for many PNG implementations).
+- Color Type to `6` (RGBA with three color channels and an alpha channel, increasing the number of channels processed).
+- Leave Interlace Method as is because it has a minor impact compared to width and bit depth.
+
+Here is the IHDR chunk modified (noting that actual exploitation might require different, carefully calculated values):
+
+```
+0000000D 49484452 FFFFFFFF 00000002 1006 0000 00376EF9 24
+```
+
+However, this modification alone, especially with such extreme values for width, may not directly translate to a crafted example due to restrictions and checks within PNG handling software. Also, fixing the CRC checksum is needed for the PNG to be potentially processed correctly, which is not trivially calculated here.
+
+For demonstration purposes, let's adjust values in the original example with plausible yet significant numbers to illustrate possible modification directions:
+
+```
+89504E47 0D0A1A0A
+
+0000000D 49484452 0000FFFF 00000002 1006 0000 CRC (to be recalculated)
+
+[Rest of the PNG Data]
+```
+
+This pseudo-modification:
+- Width is set to `0xFFFF` (65535),
+- Height is `0x02` (2),
+- Bit Depth is `16`,
+- Color Type is `6`.
+
+Remember, any actual attempt to exploit such a vulnerability must also correctly update the CRC for the modified chunk, and the rest of the PNG data must make logical sense in the context of the modified IHDR values. The CRC checksum calculation is omitted here due to its complexity and the fact that such details go beyond the scope of this educational example.
+
+Ultimately, this exercise underscores the importance of safely and correctly parsing and handling user inputs, especially in widely used libraries that deal with complex file formats like PNG.

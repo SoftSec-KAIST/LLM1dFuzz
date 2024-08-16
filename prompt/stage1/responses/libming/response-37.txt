@@ -1,0 +1,11 @@
+Based on the provided information about CVE-2016-9827 and the associated patch, the root cause of the vulnerability appears to be the incorrect handling of data read from a SWF (Shockwave Flash) file. Specifically, the vulnerability lies in how the `_iprintf` function in `outputtxt.c` of the `listswf` tool in libming 0.4.7 processes data.
+
+Here's a breakdown of the root cause:
+
+1. **Improper Data Handling**: The original code uses the `readBytes` function to read a sequence of bytes from a SWF file based on a specified length (`length`). This method is applied to parse the Protect tag's password. However, this approach does not ensure that the data being read is properly null-terminated, which is essential for data treated as a string.
+
+2. **Buffer Over-read**: As a result of the improper handling mentioned above, when the `_iprintf` function attempts to read the password data as a string (which expects a null-terminated sequence), it can lead to a buffer over-read. This means the function could continue reading past the allocated buffer if a null character (`\0`) is not encountered within the expected length. A buffer over-read can cause undefined behavior, including accessing memory areas that the process is not supposed to, potentially leading to a Denial of Service (DoS) attack if the process crashes.
+
+3. **The Patch**: The committer corrects this issue by changing the way the password is read. Instead of using `readBytes`, the patch switches to `readString`. This adjustment likely ensures that the data is treated as a string from the beginning, including proper handling of the string termination (null character), thus preventing the possibility of a buffer over-read.
+
+In summary, the root cause of CVE-2016-9827 is the misuse of a byte-reading function for string data without ensuring proper null-termination, leading to a potential buffer over-read vulnerability. The fix involves changing to an appropriate string-reading function that likely handles string termination correctly, mitigating the risk of over-reading past the buffer.

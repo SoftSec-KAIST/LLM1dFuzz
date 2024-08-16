@@ -1,0 +1,13 @@
+The root cause of CVE-2018-13785 within libpng 1.6.34 involves an incorrect calculation of a value named `row_factor` in the `png_check_chunk_length` function, as found in the file `pngrutil.c`. This improper calculation leads to an integer overflow when the software processes a specially crafted PNG file. 
+
+An integer overflow occurs when an arithmetic operation attempts to create a numeric value that is outside of the range that can be represented with a given number of digits — the result is wrapped around and thus becomes much smaller, incorrect, or even negative (in languages that support signed integers). After this overflow, the code likely performs some operation that, due to the incorrect, overflow-induced value, results in a divide-by-zero error. A divide-by-zero occurs when a divisor in a division operation is 0; since division by zero is undefined in mathematics, modern CPUs and programming languages treat it as an error or exception.
+
+To dive into specifics from the provided patch:
+
+1. **Original Calculation (Before Patch)**:
+   - The original code performed an arithmetic operation that could easily result in a number too large to be stored in the allocated memory for the `row_factor` variable. This size mismatch happens because the multiplication of `png_ptr->width`, `png_ptr->channels`, and the bit depth related calculation could exceed the capacity of the variable type without proper type casting or handling, leading to an overflow. 
+
+2. **Post-Patch Calculation (After Patch)**:
+   - The provided patch fixes this issue by explicitly casting each of the multiplicands to `size_t` before performing the multiplication. `size_t` is a data type capable of representing the size of the largest possible object on the target platform, essentially ensuring that the multiplication does not lead to unintended overflows. Additionally, sensible limits are checked against the calculated `idat_limit` based on `row_factor` and `png_ptr->height` to avoid scenarios where the values involved in operations exceed safe or meaningful bounds. 
+
+In summary, the root cause is a combination of improper type casting or usage leading to an integer overflow, followed by operations that could yield a divide-by-zero error, all of which could result in a denial of service when processing maliciously crafted PNG files. The patch correctly addresses these issues by ensuring that calculations are performed within type limits that can safely store the results of said calculations, preventing both the overflow and the subsequent divide-by-zero.

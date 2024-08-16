@@ -1,0 +1,5 @@
+Based on the provided information from the patch and the description of CVE-2016-9827, the vulnerability relates to the handling of the Protect tag's password in SWF files. The Protect tag in an SWF file is used for simple protection of the SWF content, usually by adding a password to prevent unauthorized viewing or decompiling of the SWF file contents.
+
+The issue was that the original code used `readBytes(f, length)` to read the length of the Protect tag's password directly from the SWF file without proper validation. This could lead to a buffer over-read if a crafted SWF file was used, allowing attackers to cause a denial of service.
+
+Thus, the field in SWF related to invoking this CVE is the Protect tag's password field. The fix changes how this particular field is read from the file, switching from reading a raw byte sequence to reading a properly terminated string, thereby mitigating the vulnerability.

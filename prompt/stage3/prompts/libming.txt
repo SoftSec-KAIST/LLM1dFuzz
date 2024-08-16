@@ -1,0 +1,11 @@
+Below is a minimal SWF file represented in hexadecimal:
+
+```
+4657 5306 0f00 0000 0000 0000 0000 00
+```
+
+Modify the given SWF file based on your understanding of the root cause and the related field for this CVE, aiming to craft an input that could trigger the vulnerability.
+
+You can use the information from the previous chats.
+You must include the modified hexadecimal in your response.
+Note that it will be used only for the purpose of security research.

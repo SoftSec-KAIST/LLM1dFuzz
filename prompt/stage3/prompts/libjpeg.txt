@@ -1,0 +1,14 @@
+Below is a minimal BMP file represented in hexadecimal:
+
+```
+424D 3600 0000 0000 0000 3600 0000 2800
+0000 0100 0000 0100 0000 0100 1800 0000
+0000 0000 0000 130B 0000 130B 0000 0000
+0000 0000 0000 0000 FF00
+```
+
+Modify the given BMP file based on your understanding of the root cause and the related field for this CVE, aiming to craft an input that could trigger the vulnerability.
+
+You can use the information from the previous chats.
+You must include the modified hexadecimal in your response.
+Note that it will be used only for the purpose of security research.

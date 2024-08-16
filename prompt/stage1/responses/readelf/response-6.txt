@@ -1,0 +1,11 @@
+The root cause underlying CVE-2017-16828 involves an integer overflow issue in the handling of augmentation data length within the GNU Binutils' dwarf.c component, specifically in the handling and parsing of ELF (Executable and Linkable Format) files. This overflow occurs when the parsing process encounters ELF files that contain corrupt augmentation data, potentially leading to a heap-based buffer over-read and resulting in a denial of service (application crash) or possibly other unspecified impacts.
+
+When the vulnerability is triggered, the incorrect handling of the augmentation data length can lead to reading data past the intended buffer. This is hazardous because it can cause the application to crash (denial of service) or even lead to other, more severe impacts, potentially allowing an attacker who can supply a crafted ELF file to execute arbitrary code or cause information leaks.
+
+The patch addresses this vulnerability mainly by:
+
+1. Changing the data type of `augmentation_data_len` from `unsigned long` to `bfd_size_type`, ensuring that the data type used to represent the length is more robust and suitable for handling sizes safely across different platforms.
+2. Adding checks for integer overflows when testing `augmentation_data_len` to prevent reading beyond the allocated buffer. This includes verifying that `augmentation_data_len` does not result in an out-of-bound read by comparing it against the remaining buffer size (`end - start`).
+3. Introducing a new function, `display_augmentation_data`, aiming to centralize and safely handle the display of augmentation data, contributing further to the mitigation of potential overflow and over-read situations.
+
+In summary, the root cause of CVE-2017-16828 is an integer overflow vulnerability due to improper handling of augmentation data length within the `dwarf.c` of GNU Binutils, particularly in the context of parsing ELF files. The provided patch addresses this issue by fixing the data type used for length representation and incorporating checks and safer handling practices to avoid overflows and over-read scenarios.

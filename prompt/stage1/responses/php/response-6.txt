@@ -1,0 +1,11 @@
+The root cause of CVE-2019-11041 seems to be a heap-buffer-overflow vulnerability within the PHP EXIF extension when parsing EXIF information from an image using the `exif_read_data()` function. Specifically, the vulnerability arises from the extension's failure to properly check the size of the buffer before reading data into it, which could allow an attacker to provide specially crafted data that causes the PHP process to read beyond the allocated memory buffer.
+
+This buffer overflow can lead to two primary types of security issues:
+
+1. **Information Disclosure:** By reading beyond the allocated buffer, sensitive information residing in memory adjacent to the allocated buffer could be disclosed to the attacker. This information might include application data, user data, or other critical information that should not be accessible.
+
+2. **Denial of Service (Crash):** Buffer overflows can cause application crashes. In this case, by causing the PHP interpreter to attempt to read or write beyond the allocated buffer, an attacker could crash the application processing the EXIF data, leading to a denial of service (DoS) condition.
+
+The provided patch addresses this issue by adding an additional check before processing the thumbnail data embedded within an image's EXIF metadata. It ensures that the `ImageInfo->Thumbnail.size` is at least 4 bytes before proceeding with the `memcmp` operation. This check prevents the read operation if the data does not meet the minimum size requirement, thereby eliminating the possibility of a buffer overflow in this context.
+
+The change makes the application safer by preventing it from processing thumbnail data that could potentially lead to a heap-buffer-overflow condition due to insufficient validation of the input data size. This patch is a preventive measure against possible exploit attempts that leverage this vulnerability.

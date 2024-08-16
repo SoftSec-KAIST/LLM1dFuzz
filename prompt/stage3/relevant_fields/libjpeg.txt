@@ -1,0 +1,2 @@
+You are not correct.
+The fields relevant for invoking this CVE are biClrUsed, biBitCount, and pixel data in a valid BMP file.

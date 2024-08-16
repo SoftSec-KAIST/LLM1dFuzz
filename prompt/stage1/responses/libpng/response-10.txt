@@ -1,0 +1,9 @@
+The root cause of CVE-2018-13785 in libpng 1.6.34 appears to be an incorrect calculation of `row_factor` in the `png_check_chunk_length` function, as indicated by the description and the patch provided. The problematic calculation could potentially trigger an integer overflow, which in turn could lead to a divide-by-zero error when processing specially crafted PNG files. This could result in a denial of service (DoS) situation where applications that use libpng to process PNG files would crash.
+
+Analyzing the patch:
+
+1. **Before Patch:** The original calculation of `row_factor` was done in a manner that might not correctly handle large or specially crafted values of `width`, `channels`, and `bit_depth`, especially considering that these values are used in an arithmetic operation that could exceed the size of the data type used (potentially leading to an integer overflow).
+
+2. **After Patch:** The patched code explicitly casts `width`, `channels`, and the result of the conditional statement about `bit_depth` to `size_t` before performing the arithmetic operation. This change ensures the calculation has a much larger space to operate in, thus avoiding an integer overflow. Also, by changing how `row_factor` is calculated and then checking if `height * row_factor` exceeds `PNG_UINT_32_MAX`, it prevents the possible divide-by-zero condition by correctly setting the `idat_limit` value.
+
+The root cause centers around the mishandling of large integer values and improper calculations that lead to an integer overflow and potentially a divide-by-zero error. The patch addresses these issues by making the arithmetic operations more precise and safe, effectively mitigating the risk of a denial of service attack via crafted PNG files.

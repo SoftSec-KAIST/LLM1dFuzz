@@ -1,0 +1,11 @@
+This CVE (CVE-2020-24370) is specifically related to the handling of local variables within Lua scripts. The issue arises in the context of `getlocal` and `setlocal` functions, as demonstrated by the use case presented in the CVE description—`getlocal(3,2^31)`. These functions are part of Lua's debug library, which allows introspection and modification of Lua internal states, such as accessing local variables of a function at a given level of the call stack.
+
+The fields within Lua that are directly related to invoking this CVE would be:
+
+1. **Debug Library/API**: The debug library provides the `getlocal` and `setlocal` functions, which are the core functions where this vulnerability can be triggered. These functions are used to get and set the values of local variables in a function call.
+
+2. **Local Variable Access**: Specifically, the vulnerability is tied to how `getlocal` and `setlocal` handle large negative numbers resulting from the negation overflow when attempting to access local variables using extremely large positive indices. This would typically be an unconventional use of these functions, as it's rare to legitimately need to access local variables at such high indexes.
+
+3. **Integer Arithmetic and Overflow**: More broadly, the vulnerability highlights issues related to integer arithmetic and overflow conditions in software, which in this case manifest in the debug operations related to local variable management.
+
+Therefore, invoking this CVE involves interactions with Lua's debug library and its functions for manipulating the local variables of a function, particularly with abnormal or edge case indices that lead to integer overflow issues.

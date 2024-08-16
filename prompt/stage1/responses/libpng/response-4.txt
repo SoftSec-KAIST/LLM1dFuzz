@@ -1,0 +1,17 @@
+Given the information about CVE-2018-13785 and the provided patch, the root cause of the vulnerability appears to be an incorrect calculation of `row_factor` leading to an integer overflow and a subsequent divide-by-zero error. Let's dissect the issue and the patch to understand the root cause better.
+
+### Vulnerability Analysis
+
+- The calculation of `row_factor` prior to the patch does not adequately cast its multiplicative components to a sufficiently large data type to prevent overflow. Since `png_ptr->width`, `png_ptr->channels`, and the result of `(png_ptr->bit_depth > 8? 2: 1)` are all potentially large values, multiplying them together could exceed the maximum value that can be held by a `size_t` on a 32-bit system, leading to an integer overflow.
+- After this incorrect calculation, there is a check if `png_ptr->height` would, when multiplied by `row_factor`, exceed `PNG_UINT_32_MAX`. If an overflow had occurred in `row_factor`, the product of `png_ptr->height` and an erroneously small (or zero) `row_factor` may falsely appear valid, bypassing intended limits.
+- When such overflow bypasses checks improperly sizing allocations, it can lead directly to a divide-by-zero error if any calculations thereafter depend on `row_factor` (since it could be computed to be 0, due to overflow wrapping), among other potential errors.
+
+### Overview of the Patch
+
+The patch corrects the vulnerability by explicitly casting each component of the `row_factor` calculation to `size_t` before performing the multiplication. By doing this, it ensures that the intermediate and final results of the calculation can accommodate larger values, eliminating the integer overflow condition.
+
+- It changes `row_factor`'s calculation by separately casting `png_ptr->width`, `png_ptr->channels`, and the evaluation outcome of `(png_ptr->bit_depth > 8? 2: 1)` to `size_t` prior to performing the multiplicative and additive operations.
+- This prevents the integer overflow by ensuring the entire expression's evaluation can accommodate the largest possible result without exceeding the bounds of `size_t`.
+- Consequently, the accurate calculation of `row_factor` eliminates the path that could lead to a divide-by-zero error when processing crafted PNG files.
+
+Therefore, the root cause of CVE-2018-13785 is an incorrect type usage and insufficient accommodation for large values in the calculation of `row_factor` within `png_check_chunk_length`, which consequentially could lead to an integer overflow and a divide-by-zero condition, enabling a denial-of-service (DoS) attack by processing specially crafted PNG files. The patch correctly addresses this issue by ensuring all variables involved in the calculation are of a type (`size_t`) that can handle the resultant large values, thereby preventing overflow.

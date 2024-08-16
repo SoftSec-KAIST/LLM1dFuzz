@@ -1,0 +1,12 @@
+The root cause of CVE-2017-3735 appears to be an issue with how OpenSSL, prior to versions 1.0.2m and 1.1.0g, parses the IPAddressFamily extension in an X.509 certificate. Specifically, the vulnerability stems from an out-of-bounds (one-byte overread) memory access. This kind of error typically happens when code attempts to read data past the end of a buffer, which can lead to undefined behavior, including crashes or incorrect processing of data.
+
+The core problem lies in the handling of the `addressFamily` field of an `IPAddressFamily` structure. The original implementation assumed that the `addressFamily` was always present and that its `data` field contained at least two bytes (which are combined to form the AFI, or Address Family Identifier). However, there was no explicit check to ensure that `addressFamily->length` was indeed at least two bytes long before attempting to read these bytes. This oversight could lead to an out-of-bounds read if the `addressFamily->data` did not contain at least two bytes.
+
+The patch addresses this issue by adding checks to ensure that:
+
+1. The `IPAddressFamily` pointer (`f`) is not NULL.
+2. The `addressFamily` field within it is not NULL.
+3. The `data` field within the `addressFamily` is also not NULL.
+4. Most importantly, that the `length` of the `addressFamily->data` is at least two bytes long before attempting to read from it.
+
+This careful validation of assumptions before accessing memory addresses prevents the one-byte overread vulnerability. Checking the length of data before accessing it is a common and effective mitigation against buffer overreads and underreads, which are common security vulnerabilities. This mitigation ensures that the program does not attempt to read beyond the allocated memory for the data it is processing, thus preventing potential memory corruption issues or information leaks that could arise from accessing memory out of bounds.

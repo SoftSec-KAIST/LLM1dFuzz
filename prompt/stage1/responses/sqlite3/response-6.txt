@@ -1,0 +1,13 @@
+The root cause of CVE-2019-19923 in SQLite 3.30.1 involves the improper handling of a specific usage of `SELECT DISTINCT` combined with a `LEFT JOIN` where the right-hand side is a view. This inadequate handling could lead to two significant issues:
+
+1. Incorrect Results: The misuse of SQLite's SELECT DISTINCT with LEFT JOIN on a view could lead to the SQL engine accessing stale result registers. These stale results would then be used, leading to incorrect query results being returned to the user or application.
+
+2. NULL Pointer Dereference: In the flawed logic, there's a scenario where an `OP_IfNullRow` opcode might be executed on a table that hasn't been properly opened. This operation expects a valid pointer to operate on, and without it (because the table was never opened), the SQL engine attempts to dereference a NULL pointer, which is an undefined operation in C and C++ programming languages. Attempting to dereference a NULL pointer typically results in a segmentation fault, causing the program (in this case, SQLite) to crash.
+
+The patch addresses these issues by adding a new rule that prevents query flattening when the outer query uses `DISTINCT`. Query flattening is an optimization technique used to merge a subquery into the outer query to improve performance. However, when used in conjunction with SELECT DISTINCT and a flawed LEFT JOIN as described, it led to the above problems.
+
+The specific changes in the patch include:
+- Introducing a new condition that checks if the outer query is using `DISTINCT` (the added **(3d)** condition).
+- Modifying the condition to prevent the flattening of the subquery if any of the conditions **(3a)** through **(3d)** are met, where previously it only considered conditions **(3a)** through **(3c)**.
+
+By disallowing query flattening in these scenarios, the patch ensures that the query engine avoids the problematic optimization path that led to stale data access and NULL pointer dereference, thus resolving the underlying cause of CVE-2019-19923.

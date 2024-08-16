@@ -1,0 +1,5 @@
+The CVE-2017-3735 is invoked when parsing an `IPAddressFamily` extension in an X.509 certificate. The vulnerability specifically lies in how the `addressFamily` field within the `IPAddressFamily` extension is handled. In the context of Distinguished Encoding Rules (DER), which is a subset of the ASN.1 encoding rules, X.509 certificates and their extensions are encoded.
+
+The `addressFamily` field, which is part of the `IPAddressFamily` extension, is expected to contain an address family identifier (AFI), commonly represented by 2 bytes. The vulnerability occurs due to a one-byte overread when the software does not properly verify that this field contains enough data (at least 2 bytes) before attempting to read it. This overread can happen during the parsing process of the DER-encoded data of an X.509 certificate when the software encounters an `IPAddressFamily` extension with a malformed or unexpectedly short `addressFamily` field.
+
+In summary, while the CVE itself does not explicitly mention DER, the vulnerability is directly related to the parsing of DER-encoded data in the `addressFamily` field of the `IPAddressFamily` extension in X.509 certificates.

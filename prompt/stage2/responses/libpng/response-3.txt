@@ -1,0 +1,13 @@
+The CVE-2018-13785 vulnerability in libpng is related to how the library processes certain fields in a PNG file. Based on the information given and the nature of the vulnerability, the fields that are directly involved in invoking this CVE would be:
+
+1. **Width**: Represented by `png_ptr->width` in the code. It's a fundamental property of the image, indicating how many pixels wide the image is.
+
+2. **Channels**: Indicated by `png_ptr->channels`. In PNG files, channels represent the components of each pixel, such as red, green, blue, and optionally an alpha (transparency) component. The number of channels affects the size of the data needed to represent each pixel.
+
+3. **Bit Depth**: Represented by `png_ptr->bit_depth`. This indicates how many bits are used for each color component of a single pixel. PNG supports bit depths of 1, 2, 4, 8, and 16.
+
+4. **Interlace**: Determined by `png_ptr->interlaced`. This field indicates whether the PNG image is interlaced (using the Adam7 interlacing method) or not. Interlacing is a method of encoding the image data in a way that allows a rough view of the whole image to be seen even before it is fully downloaded, by rearranging the image data.
+
+The vulnerability arises from the calculation of `row_factor` in the `png_check_chunk_length` function which involves these fields. The flawed calculation could lead to an integer overflow if an attacker crafts a PNG file with specially designed values for these fields, particularly with excessively large width or improper values that would maximize the product of `width`, `channels`, and conditional modifications based on `bit_depth` and `interlaced`. Consequently, the overflow could cause a divide-by-zero error, leading to a Denial of Service when the application tries to process such a crafted PNG file.
+
+This demonstrates how specific fields in a file format, when not properly validated or when calculations related to them are not properly handled, can become vectors for exploiting vulnerabilities in the software that processes them.

@@ -1,0 +1,4 @@
+<!DOCTYPE a [
+<!ELEMENT veryLongElementNamePrefix_veryLongElementName EMPTY>
+]>
+<a:veryLongElementNamePrefix_veryLongElementName xmlns:a="http://www.example.com/some/very/long/namespace/uri/that/could/potentially/cause/an/issue/if/libxml2/is/not/properly/checking/buffer/sizes/and/leads/to/an/overflow"/>

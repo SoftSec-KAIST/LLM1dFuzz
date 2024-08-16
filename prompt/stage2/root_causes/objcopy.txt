@@ -1,0 +1,2 @@
+You are not correct.
+The root cause of this CVE is that the section names of the 'SHT_REL' / 'SHT_RELA' sections were incorrectly assumed to start with '.rel' / '.rela'.

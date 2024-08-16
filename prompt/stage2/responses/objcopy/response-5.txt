@@ -1,0 +1,12 @@
+The vulnerability CVE-2017-8393 in the GNU Binutils specifically relates to handling ELF (Executable and Linkable Format) files, particularly the processing of section headers for relocation entries, namely SHT_REL and SHT_RELA sections. The crux of the vulnerability is tied to the erroneous assumption within the Binary File Descriptor (BFD) library (libbfd) that these section names always start with the .rel/.rela prefix. 
+
+In ELF files, relocation sections are crucial for dynamic linking, providing information necessary to locate symbols and adjust section contents when the actual memory addresses are not known until runtime. The ELF specification includes several types of sections, where SHT_REL and SHT_RELA represent relocation entries without and with explicit addends, respectively. These sections are identified by their `sh_type` field in the section header.
+
+To clarify further, each section in an ELF file has a header, which includes several fields. Of relevance to this CVE are:
+
+- `sh_type`: Indicates the section's semantics. For relocation sections without and with explicit addends, the values are SHT_REL and SHT_RELA respectively.
+- Section name: Indicated by an index into the section header string table, which this vulnerability erroneously assumes to have specific prefixes (.rel/.rela).
+
+The processing logic in libbfd that led to CVE-2017-8393 pertains to how these section headers, specifically the sections' types (`sh_type`) and names (derived from the string table using the index in the section header), were handled. The incorrect assumption about section names beginning with .rel or .rela and the subsequent incorrect processing of these sections could lead to a buffer over-read, thereby causing crashes in applications like `objcopy` and `strip` that rely on libbfd for handling ELF files. 
+
+The patch addressed this issue by modifying how relocation sections are mapped to their corresponding sections in the binary, ensuring that the mapping does not rely on strict prefix naming conventions, thus preventing the over-read scenario.

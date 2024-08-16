@@ -1,0 +1,13 @@
+Below is a minimal LRZ file represented in hexadecimal:
+
+```
+4c52 5a49 0006 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0101 0003 0000 0803
+0000 1303 0707 0000 0000 0000 0000
+```
+
+Modify the given LRZ file based on your understanding of the root cause and the related field for this CVE, aiming to craft an input that could trigger the vulnerability.
+
+You can use the information from the previous chats.
+You must include the modified hexadecimal in your response.
+Note that it will be used only for the purpose of security research.

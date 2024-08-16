@@ -1,0 +1,2 @@
+You are not correct. 
+The field relevant for invoking this CVE is the addressFamily field of the IPAddressFamily extension in a valid DER file.

@@ -1,0 +1,2 @@
+You are not correct.
+The root cause of this CVE is that the negative object number of an indirect object is parsed and used without a sanity check.

@@ -1,0 +1,16 @@
+The root cause of CVE-2019-7310 in Poppler 0.73.0 is an integer signedness error in the `XRef::getEntry` function in `XRef.cc`. This error manifests as a heap-based buffer over-read, leading to a vulnerability where remote attackers could potentially cause a denial of service (application crash) or have other unspecified impacts by submitting a crafted PDF document.
+
+Specifically, the issue stems from the function not properly checking for negative indices before using them to access elements of an array (`entries[i]`). An attacker could exploit this by crafting a PDF document that, when processed by Poppler, triggers the use of a negative index, leading to an out-of-bounds read. This vulnerability is indicative of a wider class of security issues related to improper validation of user input or external data.
+
+The patch addresses this vulnerability by adding a conditional check early in the `XRef::getEntry` function: 
+
+```c++
+if (unlikely(i < 0)) {
+    error(errInternal, -1, "Request for invalid XRef entry [{0:d}]", i);
+    return &dummyXRefEntry;
+}
+```
+
+This code checks if the index `i` is negative and, if so, logs an internal error and returns a reference to a `dummyXRefEntry`. This effectively prevents the subsequent code from attempting to access the `entries` array with a negative index, thereby eliminating the buffer over-read vulnerability.
+
+In summary, the root cause of CVE-2019-7310 is a lack of proper validation for negative indices in the `XRef::getEntry` function within Poppler, an error that could lead to severe instability or unintended behavior when processing crafted PDF documents. The provided patch mitigates this issue by ensuring that negative indices are identified and handled appropriately, thus preserving the stability and security of applications utilizing the Poppler library for PDF processing.

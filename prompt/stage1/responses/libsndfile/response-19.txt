@@ -1,0 +1,9 @@
+The root cause of CVE-2018-19758 in `libsndfile` 1.0.28 appears to be a lack of proper validation or restriction on the size of the `loop_count` variable before it is used in memory operations related to reading or writing WAV file headers. Specifically, in the function `wav_write_header`, the `loop_count` variable is involved in a loop where its value influences memory operations. If `loop_count` carries a large or unexpected value, it could lead to a heap-based buffer over-read, because the code might attempt to read beyond the bounds of allocated memory. This vulnerability could be exploited to cause a denial of service (DoS) through a specially crafted WAV file that triggers this out-of-bounds read.
+
+The patch fixes this by ensuring that the `loop_count` variable is constrained to a sensible range before it is used in the loop. Specifically, the patch adds a line to limit the range of `loop_count` to 0x7FFF (which is the maximum positive value for a signed 16-bit integer), thus preventing an oversized value from causing a buffer over-read. This line:
+```c
+psf->instrument->loop_count &= 0x7fff ;
+```
+is a bitwise operation that effectively ensures `loop_count` does not exceed 32767, thereby mitigating the risk of reading beyond the allocated heap space based on an oversized `loop_count`.
+
+This correction suggests the underlying cause was an assumption that `loop_count` would always be within a sane range, without properly ensuring this through explicit checks or limitations within the code. By addressing this oversight, the patch mitigates the heap-based buffer over-read vulnerability tied to CVE-2018-19758.

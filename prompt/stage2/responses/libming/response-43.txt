@@ -1,0 +1,9 @@
+The field in SWF (Small Web Format or ShockWave Flash) related to invoking CVE-2016-9827 is the Protect tag's password field. The vulnerability occurs during the parsing of the Protect tag in a SWF file, specifically when reading the password associated with this tag.
+
+The Protect tag is used in SWF files to mark them as protected. The intention behind the Protect tag is to deter or prevent SWF decompilation or direct editing. In some cases, a password can be associated with this tag, which would need to be provided to unlock or edit the protected content.
+
+Before the patch, the code was using `readBytes(f, length);` to read the content of the Protect tag's password directly from the file into a buffer without treating it as a null-terminated string. This led to a buffer over-read vulnerability because there was no guarantee that the buffer would have a null-terminator at the end, potentially allowing for out-of-bounds memory access if the data was processed as a string beyond its actual size.
+
+The patch corrected this behavior by changing the method of reading the password to `readString(f);`, which ensures that the read operation treats the password data as a string, most likely adding proper string termination and thus preventing the buffer over-read issue.
+
+Therefore, the Protect tag's password field in a SWF file is the specific field related to invoking this CVE.

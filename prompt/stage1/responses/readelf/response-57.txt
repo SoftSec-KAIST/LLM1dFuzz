@@ -1,0 +1,15 @@
+The root cause of CVE-2017-16828 in the GNU Binutils `display_debug_frames` function is primarily an integer overflow issue that occurs when handling ELF (Executable and Linkable Format) binary files with corrupt augmentation data. This vulnerability could lead to a heap-based buffer over-read, which, in effect, could crash the application or potentially allow remote attackers to execute arbitrary code, depending on the circumstances.
+
+The integer overflow emerges from how the program calculates and checks the length of the augmentation data in ELF binaries. The original code used an `unsigned long` data type for representing the length of the augmentation data (`augmentation_data_len`), and this representation could overflow when extremely large, corrupt values are processed. 
+
+If the value of this length exceeded what can correctly be represented (or assumed to be a reasonable length for the buffer), it would lead to incorrect memory access operations. Specifically, the program could either read beyond the allocated heap buffer (if the value is larger than expected and leads to underestimation of required buffer size) or fail to process valid data correctly under certain conditions.
+
+The patch addresses this vulnerability and mitigates the risk of integer overflow by:
+
+1. Changing the data type of `augmentation_data_len` from `unsigned long` to `bfd_size_type` in the `dwarf.c` source file. This data type change is designed to better handle size computations on different platforms, reducing the risk of overflow.
+
+2. Introducing boundary checks: The patch includes checks to ensure that `augmentation_data_len` is not larger than the expected maximum size (computed as the difference between two pointers, marking the start and end of a memory buffer). 
+
+3. Factoring out augmentation data printing to a dedicated function (`display_augmentation_data`) and therein including format adjustments to handle wide outputs correctly. Although this change primarily impacts output formatting, cleaner code can also contribute to safer handling by isolating functionalities.
+
+Overall, by addressing the integer overflow and ensuring rigorous checks when processing potentially corrupt ELF files, the patch mitigates the risk of crashes and arbitrary code execution that could stem from specially crafted malicious input.

@@ -1,0 +1,7 @@
+The CVE (CVE-2017-3735) is associated with the way OpenSSL handles the parsing of an IPAddressFamily extension in an X.509 certificate. Specifically, the vulnerability is related to the processing of the `addressFamily` field within the DER (Distinguished Encoding Rules) encoded representation of the IPAddressFamily extension.
+
+In the context of DER, an X.509 certificate contains various fields encoded according to the ASN.1 specification, which DER is a subset of. The IPAddressFamily extension, part of the Subject Alternative Name (SAN) or similar extensions, includes the `addressFamily` field that indicates the type of IP address (such as IPv4 or IPv6). The `addressFamily` field's data should be correctly sized (at least 2 bytes long in this context) to safely extract and process the address family identifier.
+
+The vulnerability occurs because, before the patch, the OpenSSL code did not properly check the length of the `addressFamily` field's data before attempting to read the first two bytes of this field. If the data was shorter than expected (less than 2 bytes), this would lead to a one-byte overread issue, potentially causing incorrect processing or display of the certificate information related to IP addresses.
+
+Thus, the specific field in DER related to invoking this CVE is the `addressFamily` field within the IPAddressFamily extension of an X.509 certificate, and the vulnerability arises from failing to correctly validate the length of this field before accessing its contents.

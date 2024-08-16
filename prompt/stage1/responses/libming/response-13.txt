@@ -1,0 +1,26 @@
+Based on the provided information about CVE-2016-9827 and the patch details, the root cause of the vulnerability seems to be related to how the `listswf` tool in libming 0.4.7 handled password data within SWF files. Specifically, the vulnerability arises from a buffer over-read condition.
+
+Here's a breakdown of why this problem occurred:
+
+### Before Patch Analysis
+
+- The `_iprintf` function mentioned in the CVE description likely relies on correctly formatted and sized input data to function securely and without errors.
+- In the pre-patch code, the function `readBytes` was used to read data from an SWF file into the password field. The key problem lies in how `readBytes` operates – it likely reads a specified length of bytes without ensuring that the data ends with a null terminator or verifying that it does not read past the allocated buffer size. This inadequately controlled operation exposes the system to a buffer over-read vulnerability when processing specially crafted SWF files.
+- A buffer over-read can occur when the program attempts to read data beyond the allocated memory for a buffer. This can lead to a denial of service by crashing the software or potentially leaking sensitive information that resides in adjacent memory spaces.
+
+### Patch Details
+
+The patch addresses the vulnerability by changing how password data is read and handled:
+
+```diff
+-      parserrec->Password = readBytes (f, length);
++      parserrec->Password = readString (f);
+```
+
+- The key change is the switch from `readBytes(f, length)` to `readString(f)`. This suggests that `readString` likely ensures the string is null-terminated, avoiding reading beyond the buffer intended for the password. This inherently mitigates the risk of a buffer over-read by ensuring the read operation stops at the end of the string.
+- This patch implies that the `readString` method is safer as it probably reads characters until a null character is found, which is a common approach to avoiding buffer over-reads in string handling.
+- By parsing the Protect tag's Password as a string rather than raw bytes, the fix reduces the risk of mishandling the byte stream, which could lead to the denial of service as mentioned in the CVE.
+
+### Conclusion
+
+The root cause of CVE-2016-9827 was the inappropriate handling of password data fetched from SWF files, specifically using a method that did not ensure the safe termination of the string, potentially leading to buffer over-read. The correction made in the patch effectively addresses this by ensuring that password data is treated and terminated as a string, preventing the application from reading beyond the allocated memory buffer.

@@ -1,0 +1,9 @@
+The specific field in SWF files related to invoking CVE-2016-9827 is the Protect tag's password field. The vulnerability arises from how the Protect tag's password was read and processed by the listswf tool in libming 0.4.7. 
+
+The Protect tag in SWF files is used for simple protection mechanisms, often just to deter casual decompilation or reverse engineering of the SWF content. It can include a password, which ostensibly would need to be known to unlock or decompile the SWF content fully. 
+
+The original implementation used `readBytes(f, length)` to read the password directly from the file, based on a specified `length`. This method was susceptible to buffer over-read if the data did not end with a null-terminating character, expecting the input to behave like a properly null-terminated string. This could lead to denial of service as the software might attempt to access memory beyond the allocated buffer when treating this input as a string.
+
+The patch changes the approach by using `readString(f)`, which reads characters until a null-terminating character is encountered, ensuring the data is always treated correctly as a string and preventing buffer over-read by taking into account string termination.
+
+Hence, the field related to this CVE is specifically the password field within the Protect tag of an SWF file.

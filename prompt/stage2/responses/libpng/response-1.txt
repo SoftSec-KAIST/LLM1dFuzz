@@ -1,0 +1,13 @@
+The CVE-2018-13785 vulnerability in libpng is related to the processing of certain fields in a PNG file that are involved in calculating the `row_factor` during the `png_check_chunk_length` function execution. The fields from a PNG file that directly influence the calculation of `row_factor`, and thus are related to invoking this CVE, include:
+
+1. **Width**: Represents the width of the PNG image. It's directly used in the calculation of `row_factor` by multiplying it with the number of channels and bit depth (adjusted for over 8 bits). A very large width can contribute to overflowing the calculation.
+
+2. **Channels**: This relates to the color type of the image (e.g., grayscale, RGB, palette-based, etc.) and determines the number of color channels per pixel. This value directly affects the computation of `row_factor`.
+
+3. **Bit Depth**: Represents the number of bits per channel. In the calculation of `row_factor`, there's a distinction made based on whether the bit depth is greater than 8, affecting the multiplier in the calculation. 
+
+4. **Interlaced**: Indicates whether the PNG image uses Adam7 interlacing. This affects the `row_factor` calculation by conditionally adding a value to it (to account for the interlacing processing overhead).
+
+The width, channels, and bit depth are parameters intrinsic to the PNG format's IHDR (Image Header) chunk, specifying the image's general attributes. The `interlaced` status is also specified in the IHDR chunk. A specially crafted PNG file with exaggerated values for these fields, specifically a very large width or an inappropriate combination of width, bit depth, and channels, can trigger the integer overflow and the subsequent divide-by-zero error addressed by this CVE.
+
+Therefore, the IHDR chunk, which contains these critical fields (width, height, bit depth, color type [affecting channels], and interlace method), plays a pivotal role in invoking CVE-2018-13785 when processing with a vulnerable version of libpng.

@@ -1,0 +1,11 @@
+The root cause of CVE-2017-8393 lies in a flawed assumption within the Binary File Descriptor (BFD) library used in GNU Binutils 2.28, specifically in the handling of section names for SHT_REL/SHR_RELA sections. More precisely, the vulnerability stems from the code (particularly within the utilities objcopy and strip, which are reliant on libbfd for binary analysis and manipulation) presuming that these section types always have names starting with the prefixes ".rel" or ".rela" respectively.
+
+This assumption could lead to incorrect handling of sections whose names do not follow this naming convention, causing a global buffer over-read. Such an error occurs when the program reads beyond the allocated buffer size, which will likely result in a crash (a segmentation fault or similar error) due to attempting to access memory not allocated to it. This vulnerability exposes programs using the libbfd library to potential denial-of-service attacks or other forms of disruptive behavior when processing crafted binary inputs.
+
+The patch addresses the underlying issue by modifying the handling and assumptions around relocation section names. Specifically, it changes the approach from hard-coded expectations about section prefixes to a more flexible mechanism that involves:
+
+1. A change in the `elf_backend_data` structure's `get_reloc_section` function to support dynamic name handling, allowing for relocation sections without the expected prefixes to be correctly identified and processed.
+2. Addition of new utility functions (`_bfd_elf_plt_get_reloc_section` and `elf_get_reloc_section`) designed to correctly identify the target sections for relocation entries by looking at the actual section names rather than relying on prefix assumptions.
+3. Updating the call sites where relocation sections are determined to use the new, more flexible handling logic.
+
+By addressing the root cause - the incorrect assumption about section naming conventions for relocation sections - this patch effectively resolves the vulnerability, ensuring that binary analysis and manipulation tools like objcopy and strip can handle a wider array of section names without crashing.

@@ -1,0 +1,2 @@
+You are not correct.
+The root cause of this CVE is that the sanity check for the large 'psf->instrument->loop_count' variable is missing.

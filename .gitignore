@@ -1,0 +1,15 @@
+# Ignore system files
+.DS_Store
+
+# Ignore environment files
+.env
+
+# Ignore backup files
+*~
+
+# Ignore Vim swap files
+*.swp
+*.swo
+
+# Ignore Python bytecode and cache directories
+__pycache__/

@@ -1,0 +1,14 @@
+The root cause of CVE-2016-9827 appears to be a buffer over-read vulnerability within the listswf tool of the libming 0.4.7 software, specifically in how it handles the parsing of certain SWF (Small Web Format or Shockwave Flash) files. The issue lies in the `_iprintf` function in `outputtxt.c`, which is triggered when processing a crafted SWF file.
+
+Looking at the provided patch:
+
+```c
+-  	parserrec->Password = readBytes (f, length);
++  	parserrec->Password = readString (f);
+```
+
+The original code reads a specified number of bytes (`length`) from an SWF file to parse the Protect tag's password. This approach can lead to a buffer over-read if the `length` specified exceeds the actual amount of available data, leading to a denial of service (DoS) when the program tries to access memory beyond what is allocated for the buffer. 
+
+The patch corrects this vulnerability by changing how the password is read from the file. Instead of reading a fixed number of bytes determined by `length`, it uses `readString(f)`, which reads characters from the file until a null terminator is encountered. This approach is safer because it naturally avoids reading beyond the bounds of the string, thus preventing the buffer over-read scenario that led to the denial of service vulnerability.
+
+In summary, the root cause of CVE-2016-9827 was the unsafe handling of input data from an SWF file, which did not properly account for the case when the `length` of data to be read for the Protect tag's password exceeded the bounds of the actual data. The fix involves parsing the Protect tag's password as a null-terminated string rather than reading a fixed number of bytes, mitigating the risk of a buffer over-read.

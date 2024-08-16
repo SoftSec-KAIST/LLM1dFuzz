@@ -1,0 +1,22 @@
+The field in SQL related to invoking CVE-2019-19923 primarily involves the use of `SELECT DISTINCT` in combination with a `LEFT JOIN` where the right-hand side (RHS) is a view. To specifically target the vulnerability before it was patched, an attacker or a user would need to construct an SQL query that meets the following criteria:
+
+1. **Uses `SELECT DISTINCT`**: The query must be attempting to return a distinct set of results, thereby using the `SELECT DISTINCT` clause.
+
+2. **Incorporates a `LEFT JOIN`**: The query structure includes a `LEFT JOIN` operation, which is a type of outer join that returns all records from the left table and matched records from the right table or NULL in case of no match.
+
+3. **Right-Hand Side is a View**: The right-hand side of the `LEFT JOIN` operation involves a view rather than a simple table. A view in SQL is a virtual table based on the result-set of an SQL statement.
+
+Putting it together, a simplified example of a SQL query that could have potentially exploited this vulnerability (before the patch) is:
+
+```sql
+SELECT DISTINCT main_table.column_name
+FROM main_table LEFT JOIN view_name ON main_table.id = view_name.id
+```
+
+In this hypothetical query:
+
+- `main_table` would be a regular table in the database.
+- `view_name` represents a view created in the database that the `LEFT JOIN` uses.
+- The query attempts to return distinct values from a column in `main_table` based on some condition related to `view_name`.
+
+It's crucial to note that simply executing a query like this would not be inherently malicious, but understanding how this structure could trigger a null pointer dereference or incorrect results helps identify the link between the SQL constructs and the CVE vulnerability. Technical details like the exact way the vulnerability would be exploited depend on the internal optimization and handling mechanisms of SQLite before the patch.

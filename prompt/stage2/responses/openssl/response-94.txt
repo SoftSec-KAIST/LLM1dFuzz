@@ -1,0 +1,5 @@
+The CVE-2017-3735 is specifically triggered while parsing the `IPAddressFamily` extension in an X.509 certificate. In the context of DER (Distinguished Encoding Rules) encoding, which is used for encoding the ASN.1 specified structures in X.509 certificates, the relevant field involved is the `addressFamily` field within this `IPAddressFamily` extension.
+
+In DER encoding, an `IPAddressFamily` extension would typically include an `addressFamily` field, which is expected to be encoded as an octet string containing at least 2 bytes to represent the Address Family Identifier (AFI). This extension is part of the IP Address Delegation extensions used in certificates issued to entities, such as routers, that need to assert the right to use certain IP addresses or address blocks.
+
+The vulnerability arises because the original code did not adequately verify if the `addressFamily`'s length was at least 2 bytes before accessing the first two bytes of data. Thus, the specific field related to invoking CVE-2017-3735 in the context of DER-encoded X.509 certificates is the insufficiently validated `addressFamily` field within the `IPAddressFamily` extension.

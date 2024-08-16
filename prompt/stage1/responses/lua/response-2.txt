@@ -1,0 +1,15 @@
+The root cause of CVE-2020-24370 in Lua 5.4.0 is a negation overflow. This type of overflow occurs when negating the minimum representable value in a signed integer type, which cannot be represented in that type. For instance, in a 32-bit signed integer, the range is from -2,147,483,648 to 2,147,483,647. Negating -2,147,483,648 would require the value 2,147,483,648 to be represented, which is outside the representable range, thus causing an overflow.
+
+The issue manifests in the `getlocal` and `setlocal` functions, where passing a very large number (for example, 2^31) as an argument can trigger a segmentation fault. This fault occurs because of incorrect handling of variables and possibly with the handling of negative indexes which are meant to access vararg (variable argument) values in a function.
+
+Looking at the patch:
+
+1. The patch changes the handling of negative indexes in the `findvararg` function, which suggests that the original logic improperly calculated positions in memory when `n` was negative, possibly leading to an attempt to access memory outside the bounds of the intended data structure (i.e., stack or list of local variables).
+
+2. The original code checked if `n` (the index) was smaller than or equal to `nextra` (the number of extra arguments), and if so, calculated the position using `n`. The negation of `n` without proper bounds checking could result in attempting to access memory out of bounds, leading to a segmentation fault.
+
+3. The corrected code avoids negation overflow by checking if `n` is greater than or equal to `-nextra`, ensuring that the calculation `- (n + 1)` does not overflow when `n` is a large negative number. By directly using `n` in its negative form and modifying the calculation accordingly, it addresses the overflow and segmentation fault issue. 
+
+4. In the `luaG_findlocal` function, the corrected patch directly passes `n` to `findvararg` without negation when `n` is negative, ensuring consistency with the handling of negative indices and further safeguarding against negation overflow.
+
+In summary, the root cause is the incorrect handling of negation and index calculation for negative indices in the context of accessing local variables and vararg values, leading to potential negation overflow and segmentation fault due to memory access violations. The patch fixes these issues by changing the logic to safely handle negative indices and prevent overflow conditions.

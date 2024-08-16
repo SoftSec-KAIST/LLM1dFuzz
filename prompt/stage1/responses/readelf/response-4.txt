@@ -1,0 +1,13 @@
+The root cause of CVE-2017-16828 in GNU Binutils 2.29.1, specifically within the handling of ELF files in the `display_debug_frames` function of `dwarf.c`, appears to be related to an integer overflow issue when processing augmentation data lengths in the Debugging Information Entries (DIEs).
+
+The problem arises when processing corrupted or specially crafted ELF files containing incorrect augmentation data lengths. An integer overflow can occur when the length of the augmentation data is misrepresented, leading to an improper calculation of buffer sizes required for holding the augmentation data. This miscalculation can subsequently result in a heap-based buffer over-read, where more data is attempted to be read into the buffer than it can actually hold, potentially leading to a denial of service (application crash) as the application tries to access memory outside of its allocated heap space. Furthermore, this vulnerability may also allow attackers to have an unspecified impact, which could potentially include executing arbitrary code or bypassing security mechanisms, depending on how the memory corruption manifests.
+
+The patch addresses this vulnerability by:
+
+1. Changing the type of `augmentation_data_len` from `unsigned long` to `bfd_size_type` in the functions `read_cie` and `display_debug_frames`, and similar adjustments are made where `augmentation_data_len` is used. This type change helps ensure that the data length is handled in a more robust and consistent manner across different platforms, potentially reducing the risk of an integer overflow.
+
+2. Introducing stricter validations and checks for `augmentation_data_len` to ensure that it does not exceed the expected maximum length based on the remainder of the data to be processed. This prevents the integer overflow from occurring by ensuring that the length value used in subsequent memory allocation and read operations is within a valid and expected range.
+
+3. Adding a new function `display_augmentation_data` to centralize and correctly handle the display of augmentation data without risking integer overflow. This function includes proper validation and formatting to ensure safe and correct output.
+
+By fixing the integer overflow problem and ensuring that augmentation data lengths are correctly validated and handled, the patch mitigates the risk of heap-based buffer over-reads and potential application crashes or other impacts when processing malformed or malicious ELF files.

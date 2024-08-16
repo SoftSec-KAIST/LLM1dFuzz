@@ -1,0 +1,2 @@
+You are not correct.
+The field relevant for invoking this CVE is the augmentation data length field of an FDE in any debug frame section's CFI record in a valid ELF file.

@@ -1,0 +1,202 @@
+Given the information about CVE-2017-8393, what do you think the root cause is?
+
+- Description
+
+The Binary File Descriptor (BFD) library (aka libbfd), as distributed in GNU Binutils 2.28, is vulnerable to a global buffer over-read error because of an assumption made by code that runs for objcopy and strip, that SHT_REL/SHR_RELA sections are always named starting with a .rel/.rela prefix. This vulnerability causes programs that conduct an analysis of binary programs using the libbfd library, such as objcopy and strip, to crash.
+
+
+- Patch
+
+commit bce964aa6c777d236fbd641f2bc7bb931cfe4bf3
+Author: Alan Modra <amodra@gmail.com>
+Date:   Sun Apr 23 11:03:34 2017 +0930
+
+    PR 21412, get_reloc_section assumes .rel/.rela name for SHT_REL/RELA.
+    
+    This patch fixes an assumption made by code that runs for objcopy and
+    strip, that SHT_REL/SHR_RELA sections are always named starting with a
+    .rel/.rela prefix.  I'm also modifying the interface for
+    elf_backend_get_reloc_section, so any backend function just needs to
+    handle name mapping.
+    
+            PR 21412
+            * elf-bfd.h (struct elf_backend_data <get_reloc_section>): Change
+            parameters and comment.
+            (_bfd_elf_get_reloc_section): Delete.
+            (_bfd_elf_plt_get_reloc_section): Declare.
+            * elf.c (_bfd_elf_plt_get_reloc_section, elf_get_reloc_section):
+            New functions.  Don't blindly skip over assumed .rel/.rela prefix.
+            Extracted from..
+            (_bfd_elf_get_reloc_section): ..here.  Delete.
+            (assign_section_numbers): Call elf_get_reloc_section.
+            * elf64-ppc.c (elf_backend_get_reloc_section): Define.
+            * elfxx-target.h (elf_backend_get_reloc_section): Update.
+
+diff --git a/bfd/ChangeLog b/bfd/ChangeLog
+index 7a389b11e55..9b5f15dc24a 100644
+--- a/bfd/ChangeLog
++++ b/bfd/ChangeLog
+@@ -1,3 +1,18 @@
++2017-04-23  Alan Modra  <amodra@gmail.com>
++
++	PR 21412
++	* elf-bfd.h (struct elf_backend_data <get_reloc_section>): Change
++	parameters and comment.
++	(_bfd_elf_get_reloc_section): Delete.
++	(_bfd_elf_plt_get_reloc_section): Declare.
++	* elf.c (_bfd_elf_plt_get_reloc_section, elf_get_reloc_section):
++	New functions.  Don't blindly skip over assumed .rel/.rela prefix.
++	Extracted from..
++	(_bfd_elf_get_reloc_section): ..here.  Delete.
++	(assign_section_numbers): Call elf_get_reloc_section.
++	* elf64-ppc.c (elf_backend_get_reloc_section): Define.
++	* elfxx-target.h (elf_backend_get_reloc_section): Update.
++
+ 2017-04-23  Alan Modra  <amodra@gmail.com>
+ 
+ 	PR 21409
+diff --git a/bfd/elf-bfd.h b/bfd/elf-bfd.h
+index af377eedc08..4c0c9e83d3e 100644
+--- a/bfd/elf-bfd.h
++++ b/bfd/elf-bfd.h
+@@ -1360,8 +1360,10 @@ struct elf_backend_data
+   bfd_size_type (*maybe_function_sym) (const asymbol *sym, asection *sec,
+ 				       bfd_vma *code_off);
+ 
+-  /* Return the section which RELOC_SEC applies to.  */
+-  asection *(*get_reloc_section) (asection *reloc_sec);
++  /* Given NAME, the name of a relocation section stripped of its
++     .rel/.rela prefix, return the section in ABFD to which the
++     relocations apply.  */
++  asection *(*get_reloc_section) (bfd *abfd, const char *name);
+ 
+   /* Called to set the sh_flags, sh_link and sh_info fields of OSECTION which
+      has a type >= SHT_LOOS.  Returns TRUE if the fields were initialised,
+@@ -2448,7 +2450,7 @@ extern bfd_boolean _bfd_elf_is_function_type (unsigned int);
+ extern bfd_size_type _bfd_elf_maybe_function_sym (const asymbol *, asection *,
+ 						  bfd_vma *);
+ 
+-extern asection *_bfd_elf_get_reloc_section (asection *);
++extern asection *_bfd_elf_plt_get_reloc_section (bfd *, const char *);
+ 
+ extern int bfd_elf_get_default_section_type (flagword);
+ 
+diff --git a/bfd/elf.c b/bfd/elf.c
+index 18b4bbe735f..dd1a41f6886 100644
+--- a/bfd/elf.c
++++ b/bfd/elf.c
+@@ -3538,17 +3538,39 @@ bfd_elf_set_group_contents (bfd *abfd, asection *sec, void *failedptrarg)
+   H_PUT_32 (abfd, sec->flags & SEC_LINK_ONCE ? GRP_COMDAT : 0, loc);
+ }
+ 
+-/* Return the section which RELOC_SEC applies to.  */
++/* Given NAME, the name of a relocation section stripped of its
++   .rel/.rela prefix, return the section in ABFD to which the
++   relocations apply.  */
+ 
+ asection *
+-_bfd_elf_get_reloc_section (asection *reloc_sec)
++_bfd_elf_plt_get_reloc_section (bfd *abfd, const char *name)
++{
++  /* If a target needs .got.plt section, relocations in rela.plt/rel.plt
++     section likely apply to .got.plt or .got section.  */
++  if (get_elf_backend_data (abfd)->want_got_plt
++      && strcmp (name, ".plt") == 0)
++    {
++      asection *sec;
++
++      name = ".got.plt";
++      sec = bfd_get_section_by_name (abfd, name);
++      if (sec != NULL)
++	return sec;
++      name = ".got";
++    }
++
++  return bfd_get_section_by_name (abfd, name);
++}
++
++/* Return the section to which RELOC_SEC applies.  */
++
++static asection *
++elf_get_reloc_section (asection *reloc_sec)
+ {
+   const char *name;
+   unsigned int type;
+   bfd *abfd;
+-
+-  if (reloc_sec == NULL)
+-    return NULL;
++  const struct elf_backend_data *bed;
+ 
+   type = elf_section_data (reloc_sec)->this_hdr.sh_type;
+   if (type != SHT_REL && type != SHT_RELA)
+@@ -3556,28 +3578,15 @@ _bfd_elf_get_reloc_section (asection *reloc_sec)
+ 
+   /* We look up the section the relocs apply to by name.  */
+   name = reloc_sec->name;
+-  if (type == SHT_REL)
+-    name += 4;
+-  else
+-    name += 5;
++  if (strncmp (name, ".rel", 4) != 0)
++    return NULL;
++  name += 4;
++  if (type == SHT_RELA && *name++ != 'a')
++    return NULL;
+ 
+-  /* If a target needs .got.plt section, relocations in rela.plt/rel.plt
+-     section apply to .got.plt section.  */
+   abfd = reloc_sec->owner;
+-  if (get_elf_backend_data (abfd)->want_got_plt
+-      && strcmp (name, ".plt") == 0)
+-    {
+-      /* .got.plt is a linker created input section.  It may be mapped
+-	 to some other output section.  Try two likely sections.  */
+-      name = ".got.plt";
+-      reloc_sec = bfd_get_section_by_name (abfd, name);
+-      if (reloc_sec != NULL)
+-	return reloc_sec;
+-      name = ".got";
+-    }
+-
+-  reloc_sec = bfd_get_section_by_name (abfd, name);
+-  return reloc_sec;
++  bed = get_elf_backend_data (abfd);
++  return bed->get_reloc_section (abfd, name);
+ }
+ 
+ /* Assign all ELF section numbers.  The dummy first section is handled here
+@@ -3841,7 +3850,7 @@ assign_section_numbers (bfd *abfd, struct bfd_link_info *link_info)
+ 	  if (s != NULL)
+ 	    d->this_hdr.sh_link = elf_section_data (s)->this_idx;
+ 
+-	  s = get_elf_backend_data (abfd)->get_reloc_section (sec);
++	  s = elf_get_reloc_section (sec);
+ 	  if (s != NULL)
+ 	    {
+ 	      d->this_hdr.sh_info = elf_section_data (s)->this_idx;
+diff --git a/bfd/elf64-ppc.c b/bfd/elf64-ppc.c
+index fc699649f07..2e8f338748b 100644
+--- a/bfd/elf64-ppc.c
++++ b/bfd/elf64-ppc.c
+@@ -121,6 +121,7 @@ static bfd_vma opd_entry_value
+ #define elf_backend_special_sections	      ppc64_elf_special_sections
+ #define elf_backend_merge_symbol_attribute    ppc64_elf_merge_symbol_attribute
+ #define elf_backend_merge_symbol	      ppc64_elf_merge_symbol
++#define elf_backend_get_reloc_section	      bfd_get_section_by_name
+ 
+ /* The name of the dynamic interpreter.  This is put in the .interp
+    section.  */
+diff --git a/bfd/elfxx-target.h b/bfd/elfxx-target.h
+index 6cc9f3f7a60..25512671a68 100644
+--- a/bfd/elfxx-target.h
++++ b/bfd/elfxx-target.h
+@@ -715,7 +715,7 @@
+ #endif
+ 
+ #ifndef elf_backend_get_reloc_section
+-#define elf_backend_get_reloc_section _bfd_elf_get_reloc_section
++#define elf_backend_get_reloc_section _bfd_elf_plt_get_reloc_section
+ #endif
+ 
+ #ifndef elf_backend_copy_special_section_fields

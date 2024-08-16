@@ -1,0 +1,2 @@
+You are not correct. 
+The field relevant for invoking this CVE is the JPEGInterchangeFormatLength tag of APP1's IFD1 in a valid JPEG file.

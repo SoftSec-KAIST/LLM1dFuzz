@@ -1,0 +1,11 @@
+The CVE-2017-8393 vulnerability is specifically related to the handling of ELF (Executable and Linkable Format) section names that pertain to relocation information, particularly those managed via sections of types SHT_REL and SHT_RELA. The core issue revolves around the incorrect assumption within the GNU Binutils' libbfd (Binary File Descriptor library) that these section names always start with the .rel or .rela prefix.
+
+In ELF, each section has a type that describes its content. The types relevant to this vulnerability are:
+
+- **`SHT_REL`**: This section type is used for storing relocation entries without explicit addends. These are entries that tell the system how to modify the program's code or data to adjust for its actual memory location at runtime.
+  
+- **`SHT_RELA`**: This section type is similar to `SHT_REL` but includes an explicit addend. Relocation entries in `SHT_RELA` sections allow more precise control over the relocation process.
+
+The vulnerability arises in how the libbfd functions processed these ELF section types, specifically in the function or logic designed to look up the section to which a set of relocations applies based on the assumption of name prefixes (.rel or .rela). As detailed in the provided patch and description, the flawed logic resided in code paths that assumed section names for `SHT_REL` and `SHT_RELA` would always follow this naming convention, leading to a buffer over-read when encountering sections not adhering to this expected naming pattern.
+
+This buffer over-read could potentially crash utilities like `objcopy` and `strip` that use libbfd to manipulate ELF files, as these tools might try to read beyond the allocated buffer for a section's name if it didn't start with the expected prefixes. The patch corrects this behavior by removing the reliance on these name prefixes and instead robustly determining the target section for relocations, including properly handling cases like `.got.plt` without implicitly depending on specific name prefixes.

@@ -1,0 +1,18 @@
+Given the clarification that the relevant field for invoking CVE-2019-7310 is the object number of a stream object, and based on the root cause being the improper handling of negative object numbers for indirect objects, I will craft a modified version of the provided minimal PDF that incorporates a negative object number for a stream object. This is for educational and security research purposes only.
+
+The goal is to construct a PDF where the parsing of a stream object with a negative object number could potentially trigger the vulnerability, given the software doesn't properly sanity-check for negative object numbers. Here is how a crafted PDF file might look based on these requirements:
+
+```
+%PDF-1.
+1 0 obj<</Pages 2 0 R>>endobj
+2 0 obj<</Kids[-3 0 R]/Count 1>>endobj
+-3 0 obj<</Parent 2 0 R/Length 45>>stream
+BT /F1 24 Tf 100 700 Td (Sample text) Tj ET
+endstream
+endobj
+trailer<</Size 4 /Root 1 0 R>>
+```
+
+In this crafted PDF, I've introduced a stream object with a negative object number `-3 0 obj`. It contains a simple text drawing instruction to draw the text "Sample text" on the page. The key aspect here is the usage of the negative object number, which is intended to exploit the vulnerability by making the parser access this stream object incorrectly due to the flaw described in CVE-2019-7310. 
+
+This crafted example is hypothetical and focuses on demonstrating how the CVE could be triggered based on an understanding of the vulnerability involving negative object numbers without proper sanity checks. Handling, parsing, or processing such a document in a vulnerable application like an older version of Poppler could potentially lead to the described security issues. In reality, the exact structure and content might need to be adjusted depending on the application's specifics and the conditions required to trigger the vulnerability effectively.

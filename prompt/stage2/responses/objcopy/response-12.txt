@@ -1,0 +1,5 @@
+The ELF (Executable and Linkable Format) field related to invoking CVE-2017-8393 is the section name field for SHT_REL and SHT_RELA sections. This vulnerability specifically involves the handling of the section names for these types of sections, which are used for storing relocation information within ELF files. 
+
+In ELF files, each section has a header which describes the section's characteristics and contents. One of the attributes in the section header is the `sh_name` attribute, which is an index into the section header string table, pointing to the name of the section. The vulnerability was due to the code in the Binary File Descriptor (BFD) library making incorrect assumptions that SHT_REL/SHT_RELA sections (relocation sections) would always have names starting with `.rel` or `.rela`.
+
+Therefore, the exploitation or triggering of CVE-2017-8393 relates to how these `.rel` and `.rela` prefixed names in the section headers are processed. The incorrect handling of these names could lead to a global buffer over-read, causing crashes in applications using libbfd to manipulate or analyze ELF files.

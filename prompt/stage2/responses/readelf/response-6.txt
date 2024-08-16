@@ -1,0 +1,7 @@
+Given the clarification, the root cause of CVE-2017-16828 is related to an integer overflow that can occur when `augmentation_data_len` is added to the `start` pointer. If `augmentation_data_len` is sufficiently large, adding it to `start` can cause `start` to overflow, wrapping around the address space. This can potentially bypass the validity check (`start >= end`), leading to a situation where the code incorrectly concludes that it is safe to proceed, possibly causing buffer over-reads or other unintended behaviors.
+
+In the context of ELF files, this issue is related to the parsing of DWARF debugging information. Specifically, it involves the handling of "Common Information Entries" (CIEs) and "Frame Description Entries" (FDEs) within the `.debug_frame` section of an ELF file. The augmentation data within these entries, which is meant to provide additional information for the decoding of call frames in the stack trace, is where this issue manifests.
+
+The `.debug_frame` section includes data used by debuggers to unwind the stack and correlate addresses in the executable or shared libraries to the source code files. Each CIE or FDE has an associated length field that specifies the size of the augmentation data following it. When an ELF file with specifically crafted (maliciously large) values in these length fields is processed, the integer overflow can occur, leading to the vulnerability.
+
+Thank you for the correction and the opportunity to clarify.

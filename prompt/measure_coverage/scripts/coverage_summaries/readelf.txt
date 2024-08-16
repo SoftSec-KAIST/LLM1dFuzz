@@ -1,0 +1,80 @@
+Seed 1:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 0.4% (441 of 122772 lines)
+  functions..: 0.8% (37 of 4601 functions)
+  branches...: 0.2% (219 of 89430 branches)
+
+Seed 2:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 0.4% (452 of 122772 lines)
+  functions..: 0.8% (35 of 4601 functions)
+  branches...: 0.3% (225 of 89430 branches)
+
+Seed 3:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 0.4% (452 of 122772 lines)
+  functions..: 0.8% (35 of 4601 functions)
+  branches...: 0.3% (225 of 89430 branches)
+
+Seed 4:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 0.3% (366 of 122772 lines)
+  functions..: 0.7% (34 of 4601 functions)
+  branches...: 0.2% (161 of 89430 branches)
+
+Seed 5:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 0.4% (452 of 122772 lines)
+  functions..: 0.8% (35 of 4601 functions)
+  branches...: 0.3% (225 of 89430 branches)
+
+Seed 6:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 0.4% (452 of 122772 lines)
+  functions..: 0.8% (35 of 4601 functions)
+  branches...: 0.3% (225 of 89430 branches)
+
+Seed 7:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 0.3% (418 of 122772 lines)
+  functions..: 0.8% (36 of 4601 functions)
+  branches...: 0.2% (200 of 89430 branches)
+
+Seed 8:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 0.4% (452 of 122772 lines)
+  functions..: 0.8% (35 of 4601 functions)
+  branches...: 0.3% (225 of 89430 branches)
+
+Seed 9:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 0.4% (451 of 122772 lines)
+  functions..: 0.8% (36 of 4601 functions)
+  branches...: 0.2% (221 of 89430 branches)
+
+Seed 10:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 0.3% (418 of 122772 lines)
+  functions..: 0.8% (36 of 4601 functions)
+  branches...: 0.2% (200 of 89430 branches)
+

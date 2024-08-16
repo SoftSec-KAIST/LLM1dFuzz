@@ -1,0 +1,13 @@
+The CVE-2019-11041 vulnerability is related to the handling of thumbnail data within the EXIF information of an image. The vulnerability is triggered when parsing the EXIF information - specifically, when scanning for the thumbnail (a small embedded image within the larger image file that provides a quick preview). This is evident from the context of the patch provided:
+
+In the patch that addresses the vulnerability, there is a focus on the function `exif_scan_thumbnail`, which, as its name suggests, is responsible for scanning the thumbnail data within the EXIF information:
+
+```c
+if (!data || ImageInfo->Thumbnail.size < 4) {
+    return FALSE; /* nothing to do here */
+}
+```
+
+The correction involves checking the size of the thumbnail data (`ImageInfo->Thumbnail.size < 4`) before proceeding with its processing. The condition ensures that there must be a minimum size of 4 bytes for the thumbnail data before it is considered valid for further processing.
+
+Hence, the field within the EXIF data that is directly related to the invocation of this CVE is the thumbnail data. The vulnerability arises from a failure to properly validate the size of the thumbnail data before attempting to read or manipulate it, leading to the potential for a heap-buffer overflow where the application could access memory beyond what was allocated for the thumbnail data. This could result in information disclosure, application crashes, or other unintended behavior depending on the context of the overflow.

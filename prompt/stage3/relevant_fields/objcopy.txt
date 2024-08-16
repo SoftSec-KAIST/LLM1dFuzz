@@ -1,0 +1,2 @@
+You are not correct. 
+The field relevant for invoking this CVE is the section name or the sh_name field of a section header of type SHT_REL / SHT_RELA in a valid ELF file.

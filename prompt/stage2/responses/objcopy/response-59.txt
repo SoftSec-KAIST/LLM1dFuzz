@@ -1,0 +1,5 @@
+The field in the ELF (Executable and Linkable Format) related to invoking CVE-2017-8393 is **sh_type**, which specifies the section type in the section header. This vulnerability specifically concerns sections with the types **SHT_REL** and **SHT_RELA**, which represent relocation information.
+
+The root cause of the vulnerability arises from the assumption within the Binary File Descriptor (BFD) library, a part of GNU Binutils, that sections of type **SHT_REL** and **SHT_RELA** always have names starting with `.rel` or `.rela`, respectively. This assumption leads to a global buffer over-read error when the library encounters a section of these types that does not follow the expected naming convention, as the code incorrectly calculates memory bounds based on these prefixes.
+
+In summary, the connection to the ELF field is through the **sh_type** field in section headers, which indicates the presence of relocation sections (**SHT_REL** and **SHT_RELA**). The mishandling of these section types, based on their names, is what leads to the vulnerability.

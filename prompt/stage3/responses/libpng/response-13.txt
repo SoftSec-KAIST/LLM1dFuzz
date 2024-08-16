@@ -1,0 +1,24 @@
+To craft a PNG input aimed at exploiting CVE-2018-13785 based on our understanding, we need to manipulate the fields related to the vulnerability: `width`, `channels`, `bit_depth`, and the `interlaced` option as described. These fields are defined within the IHDR chunk of the PNG file. Given that changing the bit depth or channels directly through hex editing without considering the correct encoding might be complex, the most straightforward approach to crafting a potentially malicious PNG is by manipulating the `width` (and possibly `height`) to large values that could lead to an overflow during the calculation of `row_factor`.
+
+Keep in mind that the IHDR chunk format starts with:
+
+- Width: 4 bytes
+- Height: 4 bytes
+- Bit depth: 1 byte
+- Color type: 1 byte
+- Compression method: 1 byte
+- Filter method: 1 byte
+- Interlace method: 1 byte
+
+Let's focus on manipulating the `width` to a very large value while keeping the file structure valid. From the provided minimal PNG hex representation, the original `width` and `height` are both set to 0x00000001 (1 pixel). Suppose we want to change the `width` to a large value to trigger the overflow, we could use the maximum uint32_t value 0xFFFFFFFF (4294967295), although practical experimentation might require adjusting this value to hit the overflow condition effectively, as the max value could lead to immediate rejection due to unrealistic dimensions.
+
+Here is the modified minimal PNG file with `width` set to 0xFFFFFFFF:
+
+```
+8950 4e47 0d0a 1a0a 0000 000d 4948 4452
+FFFFFFFF 0000 0001 0100 0000 0037 6ef9
+2400 0000 0a49 4441 5478 0163 6000 0000
+0200 0173 7501 1800 0000 0049 454e 44ae
+4260 82
+```
+This changes only the width within the IHDR chunk, leaving the height and other properties as they were. Note that this edit reflects a conceptual understanding and might not be directly applicable or trigger the vulnerability out-of-the-box due to the complexity of the exploitation conditions and the integrity checks within software handling PNG files. Also, the CRC of the IHDR chunk and possibly other parts of the file would need to be recalculated to maintain a valid PNG format, which is not reflected in this simplistic edit. This crafted input should be used responsibly and solely for the purpose of security research under controlled conditions.

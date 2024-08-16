@@ -1,0 +1,2 @@
+You are not correct.
+The root cause of this CVE is that 's->buf' can be accessed after being freed due to the uninitialized variable 'ucthread[s→unext_thread].s_buf'.

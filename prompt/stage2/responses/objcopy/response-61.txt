@@ -1,0 +1,7 @@
+The field in ELF (Executable and Linkable Format) related to invoking CVE-2017-8393 is specifically tied to the handling of section headers that define relocation information, namely the sections of type SHT_REL and SHT_RELA. These types are used for relocation entries with explicit addends (SHT_RELA) and without addends (SHT_REL), respectively.
+
+The vulnerability hinges on the incorrect assumption about the naming convention of these sections, which are expected to start with .rel or .rela. The fields in an ELF file that actualize this vulnerability are the section header names (part of the section header table) for sections of types SHT_REL and SHT_RELA.
+
+In ELF files, each section has an entry in the section header table, and one of the fields in this entry is `sh_name`, which contains an index into the section header string table section, `.shstrtab`, denoting the name of the section. It's the handling of these `sh_name` values corresponding to SHT_REL and SHT_RELA sections where the assumption error and thus the vulnerability manifest.
+
+The vulnerability is triggered during the processing of these sections by utilities like `objcopy` and `strip`, which utilize the BFD library, when they encounter a section whose name does not follow the expected naming convention but is processed as if it did. This incorrect processing leads to a "global buffer over-read error," as outlined in the details of CVE-2017-8393.

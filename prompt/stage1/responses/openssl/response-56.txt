@@ -1,0 +1,7 @@
+Based on the provided information and the details of the patch for CVE-2017-3735, the root cause of the issue can be identified as an out-of-bounds read. 
+
+In the original code, there was an assumption that the `addressFamily` field in an `IPAddressFamily` structure always contains at least two bytes of data (`data[0]` and `data[1]`). This assumption led to a situation where, if an `IPAddressFamily` extension in an X.509 certificate did not meet this expectation (for example, if it was shorter than expected), the code would still attempt to access these two bytes. This could potentially lead to reading one byte past the end of the allocated buffer if the `addressFamily`'s `data` was indeed only one byte long or completely empty, resulting in an out-of-bounds read.
+
+The patch resolves this issue by adding an additional condition to ensure that the `addressFamily`'s `length` is at least 2 bytes before attempting to access `data[0]` and `data[1]`. This effectively prevents the overread by ensuring that the reference to the two bytes is safe and within bounds. 
+
+It's important to note that the vulnerability only leads to an incorrect text display of the certificate and does not imply execution of arbitrary code or other more severe impacts. Nonetheless, ensuring the integrity and correct processing of certificate information is crucial for the security of SSL/TLS connections, making this fix important for preserving the trustworthiness of secure communications.

@@ -1,0 +1,13 @@
+To craft a PDF input that targets the specific vulnerability described in CVE-2019-7310, we need to introduce a negative object number for a stream object, given the root cause involves the parsing and usage of negative object numbers without adequate sanity checks. Here's how a manipulative, minimal PDF could be crafted based on the structure provided, which includes an intentionally malformed negative object number:
+
+```
+%PDF-1.
+1 0 obj<</Pages 2 0 R>>endobj
+2 0 obj<</Kids[-3 0 R]/Count 1>>endobj
+-3 0 obj<</Parent 2 0 R>>endobj
+trailer<</Size 4 /Root 1 0 R>>
+```
+
+In this modified version, the object number for the third object is deliberately set to `-3`, incorporating an invalid, negative value. This manipulation is aimed at targeting the parsing functionality within Poppler (as detailed in CVE-2019-7310), specifically within the logic that fetches entries from the cross-reference table or stream. According to the vulnerability's description, the original function `XRef::getEntry` did not adequately handle negative indices, leading to a potential heap-based buffer over-read scenario. By introducing a negative object number, attempts by the parser to access this malformed entry in the cross-reference could trigger the vulnerability, potentially causing a denial of service (application crash) or other unspecified impacts.
+
+Please remember, the purpose of demonstrating this modification is strictly for educational and security research purposes, emphasizing the importance of input validation in software development to prevent similar vulnerabilities.

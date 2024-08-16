@@ -1,0 +1,9 @@
+The root cause of CVE-2017-8393 in the Binary File Descriptor (BFD) library, as distributed in GNU Binutils 2.28, was an incorrect assumption in the code regarding section names. Specifically, the vulnerability stemmed from the assumption that sections of type SHT_REL/SHR_RELA are always named starting with a .rel/.rela prefix. This assumption was flawed and led to a global buffer over-read error. This error occurred in the context of applications like `objcopy` and `strip` that utilize the libbfd library for analyzing binary programs; the incorrect assumption about section names could cause these programs to crash due to attempts to read beyond the buffer when encountering section names not following the expected naming convention.
+
+The patch addresses this issue by modifying the functions and the way they determine to which section the relocations apply, instead of blindly assuming a naming scheme based on prefixes. The patch includes:
+
+- Changes to the `elf_backend_data` structure and the `get_reloc_section` function prototype in `elf-bfd.h` to consider the actual names of sections instead of assuming prefixes.
+- Introduction of new functions `_bfd_elf_plt_get_reloc_section` in `elf.c` and adjustments in `assign_section_numbers` to use the new way of determining relocation sections.
+- Updates in other related files (`elf64-ppc.c`, `elfxx-target.h`) to align with the new approach.
+
+By changing the way the library associates relocations with sections, based on actual section names without making risky assumptions, the fix effectively mitigates the risk of buffer over-read vulnerabilities in scenarios where the naming convention doesn’t match the hardcoded expectations. This patch therefore addresses the root cause by eliminating the unsafe assumption and implementing a more reliable method to link relocations to their corresponding sections.

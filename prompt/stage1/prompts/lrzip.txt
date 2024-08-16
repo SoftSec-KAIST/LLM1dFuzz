@@ -1,0 +1,36 @@
+Given the information about CVE-2018-11496, what do you think the root cause is?
+
+- Description
+
+In Long Range Zip (aka lrzip) 0.631, there is a use-after-free in read_stream in stream.c, because decompress_file in lrzip.c lacks certain size validation.
+
+
+- Patch
+
+commit a81248e47d276cf59b8c7e22558e2b5035e87b33
+Author: Con Kolivas <kernel@kolivas.org>
+Date:   Mon May 28 15:06:04 2018 +1000
+
+    Cope with corrupt/crafted archive stream overruns.
+
+diff --git a/stream.c b/stream.c
+index cec8ac6..0dc68be 100644
+--- a/stream.c
++++ b/stream.c
+@@ -1710,6 +1710,7 @@ out:
+ 
+ 	print_maxverbose("Taking decompressed data from thread %ld\n", s->unext_thread);
+ 	s->buf = ucthread[s->unext_thread].s_buf;
++	ucthread[s->unext_thread].s_buf = NULL;
+ 	s->buflen = ucthread[s->unext_thread].u_len;
+ 	sinfo->ram_alloced -= s->buflen;
+ 	s->bufp = 0;
+@@ -1755,6 +1756,8 @@ i64 read_stream(rzip_control *control, void *ss, int streamno, uchar *p, i64 len
+ 		n = MIN(s->buflen - s->bufp, len);
+ 
+ 		if (n > 0) {
++			if (unlikely(!s->buf))
++				failure_return(("Stream ran out prematurely, likely corrupt archive\n"), -1);
+ 			memcpy(p, s->buf + s->bufp, n);
+ 			s->bufp += n;
+ 			p += n;

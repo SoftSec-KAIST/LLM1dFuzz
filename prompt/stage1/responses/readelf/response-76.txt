@@ -1,0 +1,15 @@
+The root cause of CVE-2017-16828 is an integer overflow vulnerability in the handling of ELF (Executable and Linkable Format) files by GNU Binutils' `display_debug_frames` function, specifically in processing Dwarf debugging information. When Binutils attempts to display debug frames from a crafted ELF file, the function `display_debug_frames` operates on augmentation data length values that can be manipulated due to insufficient validation.
+
+This integer overflow can lead to scenarios where the program incorrectly calculates buffer sizes or array indices, causing it to access memory out of the allocated heap boundaries. This results in a heap-based buffer over-read. Such over-reads can lead to a Denial of Service (DoS) by crashing the application or potentially lead to further unspecified impacts, which could imply arbitrary code execution or information disclosure, depending on how the corrupted data is used by the application thereafter.
+
+The patch for this vulnerability involves several key changes:
+
+1. **Type Change for `augmentation_data_len`:** The type of the variable `augmentation_data_len` was changed from `unsigned long` to `bfd_size_type`. This change is crucial because `bfd_size_type` is used within Binutils to represent sizes and offsets in a portable and safe manner, reducing the risk of integer overflows when handling large sizes.
+
+2. **Overflow Check:** The patch introduces checks to ensure that the calculated augmentation data length does not exceed the bounds of the data buffer. This is done by comparing the `augmentation_data_len` against the calculated remaining buffer size before proceeding with operations that use this length.
+
+3. **Use of Safe Printing Functions:** The patch modifies how augmentation data length values are printed, using `dwarf_vmatoa` for safe conversion of values to strings. This avoids scenarios where malformed values could cause incorrect logging output, which in some cases could be another vector for exploiting format string vulnerabilities.
+
+4. **Refactoring for Clarity and Safety:** The patch extracts the printing of augmentation data into a separate function, `display_augmentation_data`, which is designed to safely print the contents of the augmentation data array. This not only makes the code more readable and maintainable but also consolidates the augmentation data handling into a single location, where it is easier to apply safety checks and mitigations.
+
+In summary, the root cause of CVE-2017-16828 is an integer overflow vulnerability due to improper handling of ELF file data, specifically in the processing of augmentation data lengths within Dwarf debugging information. The provided patch addresses this issue by changing the data type used for lengths to a safer alternative, adding bounds checking, and refactoring the code to improve its safety and maintainability.

@@ -1,0 +1,10 @@
+The root cause of CVE-2017-9047 in libxml2 involves improper buffer size checks in the function `xmlSnprintfElementContent` when recursively dumping the element content definition into a buffer. The vulnerability specifically arises due to the function's failure to accurately account for the length of the buffer `buf` after appending the `content->prefix` and before attempting to append `content->name`.
+
+Initially, the variable `len` is assigned the length of the buffer using `strlen(buf)`. The check to see if there is enough space in the buffer to append `content->name` also mistakenly uses `len` (which is now outdated since `content->prefix` may have been appended) instead of recalculating the current buffer length with `strlen(buf)`. Consequently, this flawed logic could allow the appending operation to exceed the buffer's allocated boundary by approximately "size" many bytes, leading to a buffer overflow. A buffer overflow can corrupt data, crash the program, or, in some cases, allow an attacker to execute arbitrary code.
+
+The provided patch addresses this issue by:
+1. Introducing a new variable `qnameLen` for calculating the length required to safely add the `content->prefix` (if it exists), a colon (as a separator), and the `content->name` into the buffer.
+2. Before actually appending these contents, it checks whether the `size - len` (the remaining space in the buffer) is less than `qnameLen + 10`. This anticipates the space needed and ensures that if the buffer does not have enough space to accommodate the new string, it instead appends " ..." to indicate truncation and returns immediately, avoiding the buffer overflow.
+3. This fix is applied at two locations in the code where buffer space checks were either incorrect or non-existent.
+
+In conclusion, the root cause is due to inaccurate buffer length checks before appending strings to the buffer, which the patch corrects by adding precise space requirements calculations before any such operation.

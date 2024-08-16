@@ -1,0 +1,2 @@
+You are not correct.
+The root cause of this CVE is that the variable 'bsize' is not initialized when freeing 'btypevec'.

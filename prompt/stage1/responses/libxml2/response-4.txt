@@ -1,0 +1,15 @@
+The root cause of CVE-2017-9047 in libxml2 is a failure to correctly manage buffer size calculations during the construction of element content definitions. This mismanagement leads to a buffer overflow vulnerability.
+
+Here's a breakdown of the issue based on the provided information:
+
+1. **Buffer Size Mismanagement**: The function `xmlSnprintfElementContent` in `valid.c` was designed to dump the content definition of an element into a character buffer (`buf`) of a specified size (`size`). It fails to accurately calculate and check the available buffer space after appending strings.
+   
+2. **Flawed Length Calculation**: The root of the problem is the way the code calculates the length of the buffer after each appending operation. Initially, the variable `len` is set using `strlen(buf)` to represent the length of the string in the buffer. As content (such as `content->prefix` and `content->name`) is appended to the buffer, `len` is not updated to reflect these changes. Instead of recalculating the buffer's remaining length with the updated size of `buf`, the code incorrectly continues to rely on the original `len` value for subsequent checks on whether additional content fits.
+
+3. **Incorrect Buffer Size Checks**: Before appending the `content->prefix` and `content->name`, the function checks if these operations would exceed the buffer's capacity by evaluating `size - len`. However, because `len` does not reflect the current size of `buf` after previous append operations, these checks can erroneously pass, leading to buffer overflow when more characters are written to `buf` than it can hold.
+
+4. **Consequences of Overflow**: The buffer overflow can cause applications utilizing libxml2, like PHP, to crash or exhibit undefined behavior. This is particularly concerning because it could potentially be exploited to execute arbitrary code under certain conditions.
+
+5. **Patch Analysis**: The applied patch addresses these issues by recalculating the required buffer length accurately before appending new content. It computes the length of the content to be appended (`qnameLen`), including any necessary delimiters and prefix lengths. It then checks if there is enough space in the buffer considering this new length. If not, it halts further appending by adding an ellipsis ("...") to indicate truncation. This patch effectively mitigates the risk of buffer overflow by ensuring that the buffer size is correctly managed and checked before any appending operation.
+
+In summary, the vulnerability was fundamentally caused by inadequate buffer size checks and mismanagement of buffer length calculations during the appending process within the `xmlSnprintfElementContent` function. The patch corrects this by ensuring accurate buffer size evaluations before any content is appended.

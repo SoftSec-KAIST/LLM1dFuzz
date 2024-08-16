@@ -1,0 +1,13 @@
+The root cause of CVE-2017-8393 stems from the assumption in the GNU Binutils' Binary File Descriptor (BFD) library's code, particularly for functionalities like `objcopy` and `strip`, that sections for SHT_REL and SHR_RELA types are always prefixed with .rel/.rela. This flawed assumption has two main implications:
+
+1. **Buffer Over-Read Error**: Due to the hardcoded expectation of section names starting with .rel/.rela, the code may incorrectly handle section names that do not adhere to this naming convention. Such mishandling can lead to a "global buffer over-read" condition. A buffer over-read can occur when the software reads beyond the end of a buffer, which might lead to crashes (denial of service) or, in some cases, information disclosure, by accessing memory locations adjacent to the buffer in question.
+
+2. **Crashes in Analysis Tools**: The vulnerability directly impacts tools that analyze binary programs using the libbfd library, such as `objcopy` and `strip`. These tools, relying on libbfd, might crash when processing binaries with SHT_REL/SHR_RELA sections that do not follow the expected naming pattern. 
+
+The root cause here is fundamentally a mismatch between the assumption of a software behavior (naming convention) and the actual diverse ways that binaries might be structured or named. Such assumptions, especially when not explicitly documented or checked within the code, can lead to software vulnerabilities because they overlook edge cases or unusual, albeit valid, use cases. The resolution as shown in the patch involves changing the approach from assuming a name format to directly handling name mapping, thus accommodating a wider variety of section names without causing over-reads or crashes. This change involves:
+
+- Modifying the interface for `elf_backend_get_reloc_section` to focus on name mapping rather than assuming section names start with certain prefixes.
+- Deleting the old function `_bfd_elf_get_reloc_section` that contained the flawed assumption.
+- Addition of two new functions, `_bfd_elf_plt_get_reloc_section` and `elf_get_reloc_section`, to handle relocation sections more robustly by checking the section names more thoroughly and accommodating targets that may have sections like `.got.plt` which do not start with the previously assumed prefixes. 
+
+This fix aims to make the BFD library more robust by removing an unsafe assumption and adding more detailed handling for section names, thus preventing the described vulnerability.

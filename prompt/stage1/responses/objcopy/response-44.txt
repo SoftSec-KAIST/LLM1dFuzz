@@ -1,0 +1,11 @@
+The root cause of CVE-2017-8393 stems from an incorrect assumption within the Binary File Descriptor (BFD) library, specifically in how objcopy and strip (programs that analyze and manipulate binary programs) handled the naming of relocation sections (SHT_REL/SHR_RELA). The issue was that the library assumed these sections would always start with a .rel/.rela prefix. This assumption led to a global buffer over-read error, as the code would improperly handle sections named differently, eventually resulting in crashes of programs like objcopy and strip when they attempted to process such sections.
+
+The patch addresses this issue by changing how the relocating sections are determined. Instead of relying on the prefix of their names, the patch updates the internal mechanism to more accurately identify which sections the relocations apply to, regardless of their naming convention. This is achieved through changes in several key areas of the code:
+
+1. Modifying the `elf_backend_get_reloc_section` interface to handle name mapping more effectively. This interface now requires a name stripped of its .rel/.rela prefix and uses it to determine the applicable section for relocations.
+
+2. Introducing new functions, such as `_bfd_elf_plt_get_reloc_section` and `elf_get_reloc_section`, which do not make assumptions about the section names and work to identify the correct sections based on current conditions and configurations, like the need for .got.plt sections in some targets.
+
+3. Updating definitions in relevant backend data structures to use these new mechanisms, improving the flexibility and reliability of section identification and handling.
+
+Overall, the root cause was tied to an inflexible and unsafe assumption about naming conventions, and the patch effectively addresses this by introducing more robust and flexible mechanisms for relocation section identification.

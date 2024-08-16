@@ -1,0 +1,11 @@
+The root cause of CVE-2020-24370 in Lua 5.4.0, as highlighted by the description and patch, involves a negation overflow issue within the `getlocal` and `setlocal` functions in the `ldebug.c` file. This issue can lead to a segmentation fault when certain functions are called with specific arguments, particularly when attempting to access local variables by their stack positions in an incorrect manner due to improper handling of negative values.
+
+The problem arises from how Lua handles local variables and their indices. Lua allows the use of negative indices to refer to function arguments and local variables, with certain expectations on how these indices are calculated and utilized internally. The original code, however, did not correctly account for cases where a large negative number (specifically, the result of negating a large positive number, such as 2^31) could result in an overflow. This would disrupt the calculation of local variable positions, leading to invalid memory access and ultimately a segmentation fault.
+
+Analyzing the patch, we see several critical changes that fix this issue:
+
+1. In the `findvararg` function, the condition `if (n <= nextra)` was changed to `if (n >= -nextra)`, adjusting the logic to correctly handle negative indices (since `n` represents negative when accessing vararg values). The calculation of `*pos` was also modified accordingly.
+
+2. The call to `findvararg` within `luaG_findlocal` was changed from `findvararg(ci, -n, pos)` to `findvararg(ci, n, pos)`, correcting the way negation is handled when passing arguments. This change ensures that negative `n` values are correctly interpreted and used within the function.
+
+By making these adjustments, the Lua team addressed the negation overflow issue, preventing the improper calculation of positions for local variables and vararg values, thus eliminating the segmentation fault vulnerability. This fix ensures that negative indices used for accessing local variables and function arguments are handled in a safe and expected manner, respecting the boundaries of allocated memory and preventing out-of-bounds access.

@@ -1,0 +1,2 @@
+You are not correct.
+The root cause of this CVE is that the sanity check for the variable 'Imageinfo->Thumbnail.size' is missing before reading the thumbnail data 'ImageInfo->Thumbnail.data'.

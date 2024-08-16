@@ -1,0 +1,13 @@
+The fields in the PNG file that are related to invoking CVE-2018-13785, based on the provided patch and description, include:
+
+1. **Width (`png_ptr->width`):** This field specifies the width of the PNG image. The incorrect calculation of `row_factor`, which involves the image's width, can contribute to the integer overflow.
+
+2. **Channels (`png_ptr->channels`):** The number of color channels in the image (e.g., RGB images have 3 channels, RGBA images have 4). This field is also used in the calculation of `row_factor` and, therefore, can impact the risk of integer overflow depending on the value.
+
+3. **Bit Depth (`png_ptr->bit_depth`):** This field specifies the bit depth per channel. The original calculation of `row_factor` takes into account whether the bit depth is greater than 8, impacting the multiplication factor (using 2 for bit depths over 8 and 1 otherwise). This also plays a role in the overflow issue.
+
+4. **Interlaced (`png_ptr->interlaced`):** Whether the PNG image is interlaced. In the calculation of `row_factor`, an additional value is added if the image is interlaced, affecting the overall calculation and potentially contributing to the overflow situation.
+
+5. **Height (`png_ptr->height`):** This field is indirectly related as the calculated `row_factor` is multiplied by the image's height to check against `PNG_UINT_32_MAX` in the patch. This check is part of the mitigation to prevent an integer overflow and the resultant possible divide-by-zero.
+
+The incorrect handling of these fields, specifically in the context of calculating `row_factor` in the `png_check_chunk_length` function, can lead to an integer overflow and a subsequent divide-by-zero error when processing a specially crafted PNG file, resulting in a denial of service. The patch addresses these issues by fixing the calculation, making it robust against overflow and divide-by-zero conditions by properly handling large, crafted values for these fields.

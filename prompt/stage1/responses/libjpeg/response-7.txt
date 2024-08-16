@@ -1,0 +1,11 @@
+The root cause of CVE-2018-14498 seems to be an out-of-bounds (OOB) read vulnerability in the handling of 8-bit BMP images by the libjpeg-turbo and MozJPEG libraries. The vulnerability arises when processing a specially crafted 8-bit BMP in which one or more of the color indices are out of range for the number of palette entries. This could lead to an application crash due to a heap-based buffer over-read.
+
+The provided commit patch addresses this issue by:
+
+1. Introducing bounds checking for color indices during the processing of 8-bit BMP images. In the modified `get_8bit_row` function in `rdbmp.c`, it checks if the color index (`t`) obtained from the BMP file is greater or equal to the colormap length (`cmaplen`). If the index is out of bounds, it triggers an error through `ERREXIT` with a newly introduced error code `JERR_BMP_OUTOFRANGE`.
+
+2. Modifying various other related parts, like updating the error message handling in `cderror.h` to replace a project-specific error enumeration (`JERR_PPM_TOOLARGE`) with `JERR_PPM_OUTOFRANGE`, which seems to be a more generic and appropriate term considering the nature of the error. This change is not only applied to BMP but also adjusted for PPM files to ensure consistency in error handling across different file formats handled by the library.
+
+3. In addition to fixing the vulnerability, the patch includes updates to the changelog and some metadata in the source code (modification years), reflecting the maintenance and addressing of the issue in the codebase.
+
+Overall, the patch is intended to prevent an application crash by ensuring that all color index references during the processing of an 8-bit BMP are within the bounds of the available colormap, thus preventing an out-of-bounds read and improving the robustness of the library when dealing with malformed or malicious BMP files.

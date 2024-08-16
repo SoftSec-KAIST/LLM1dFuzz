@@ -1,0 +1,17 @@
+The field in SQL that relates to invoking CVE-2019-19923 is associated with executing a query that involves `SELECT DISTINCT` combined with a `LEFT JOIN` where the right-hand side of the `LEFT JOIN` is a view. This specific composition of SQL operations and structures triggers the vulnerability.
+
+To potentially exploit this vulnerability, an attacker would need to craft a SQL query that:
+
+1. Uses `SELECT DISTINCT` to ensure the outer query is attempting to return only distinct results.
+2. Incorporates a `LEFT JOIN`, which specifies a join condition and retrieves all records from the left table (the first table mentioned in the query), along with matching records from the right table (the table on the right-hand side of the `JOIN`), or `NULL` in the case of no match.
+3. Specifies that the right-hand side of the `LEFT JOIN` operation is a view, not a simple table. A view in SQL is a virtual table based on the result-set of an SQL statement.
+
+An example query that might have been problematic before the patch (not necessarily exploiting the vulnerability for malicious purposes but could illustratively cause the issue) could look something like this:
+
+```sql
+SELECT DISTINCT main.id 
+FROM main
+LEFT JOIN (SELECT * FROM view_name) AS subview ON main.id = subview.ref_id;
+```
+
+In this hypothetical example, `main` would be your primary table, and `subview` would be the result of a `SELECT` operation on a view named `view_name`, which serves as the right-hand side of the `LEFT JOIN`. This type of query structure, under specific conditions before the patch was applied, could lead to a NULL pointer dereference or incorrect query results due to the optimization flaw addressed by CVE-2019-19923.

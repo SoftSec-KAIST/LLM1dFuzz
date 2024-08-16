@@ -1,0 +1,13 @@
+The root cause of CVE-2017-16828 in GNU Binutils 2.29.1 is primarily related to the handling of augmentation data within ELF (Executable and Linkable Format) files, specifically within the DWARF debugging information. The vulnerability arises from an integer overflow issue when parsing the length of augmentation data in DWARF sections. This overflow occurs because the original code uses an `unsigned long` type for `augmentation_data_len`, which could be manipulated with crafted ELF files to trigger an overflow. The overflow then could lead to improper calculations of buffer sizes leading to a heap-based buffer over-read, and ultimately cause a denial of service (application crash) or potentially allow an attacker to have unspecified impacts.
+
+The patch to address this vulnerability involves several key changes:
+
+1. **Type Change for `augmentation_data_len`**: The patch changes the data type of `augmentation_data_len` from `unsigned long` to `bfd_size_type`. This change probably enhances the portability and correctness of handling the size values across different platforms, ensuring that the size calculations remain within safe bounds and reducing the likelihood of an overflow.
+
+2. **Introduction of `display_augmentation_data` Function**: A new function `display_augmentation_data` is created to encapsulate the logic for printing augmentation data. This function takes into account the `do_wide` flag to properly format the output, either in a compressed format to fit screen width or a full display. This adds clarity and possibly security by handling the data in a controlled manner, abstracting the details of how augmentation data should be displayed.
+
+3. **Overflow Check**: The patch introduces checks for integer overflow when testing `augmentation_data_len` against the calculated buffer size (`end - start`). This is crucial for preventing the overflow by validating that the length of the augmentation data specified does not exceed the actual data available, which avoids over-reading the buffer.
+
+4. **Improving Error Handling and Warnings**: Improved error handling and warnings are added to notify about potential data corruption or anomalies in the augmentation data. This would help in diagnosing issues and ensuring that unexpected values do not lead to security vulnerabilities.
+
+In summary, the root cause of CVE-2017-16828 is the lack of proper handling and validation of augmentation data lengths in ELF files, which could lead to integer overflows. The patch addresses this issue by changing type definitions to more suitable ones, adding detailed error handling, and improving data presentation logic, thus mitigating the risk associated with processing corrupted or maliciously crafted ELF files.

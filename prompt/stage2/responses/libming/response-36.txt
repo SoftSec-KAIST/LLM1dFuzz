@@ -1,0 +1,5 @@
+Given the correction that the root cause of CVE-2016-9827 is the function 'readBytes' not ensuring the parsed password is null-terminated, and considering the context of the patch provided, the specific SWF field related to invoking this CVE is the "Protect tag" field's password.
+
+The Protect tag in an SWF file is used for simple password protection, making it so that the file cannot be imported into most SWF authoring tools without providing the correct password. Based on the patch and its description, it's this Protect tag's handling, specifically the way the password is parsed using the 'readBytes' method without ensuring null termination, that leads to the buffer over-read vulnerability.
+
+Correct handling of this field by changing the reading methodology to `readString(f)`, which presumably ensures the string is null-terminated, mitigates the vulnerability by preventing an over-read of the buffer based on the password data associated with the SWF file's Protect tag.

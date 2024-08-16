@@ -1,0 +1,11 @@
+<!DOCTYPE a[
+<!ELEMENT a (b)>
+<!ELEMENT b (c)>
+<!ENTITY x "very-long-string-here">
+<!ELEMENT c (#PCDATA)>
+]>
+<a>
+    <b>
+        <c>&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;&x;</c>
+    </b>
+</a>

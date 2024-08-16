@@ -1,0 +1,7 @@
+Given the clarification on the root cause of CVE-2017-16828, which is an oversight in validating that the 'start' pointer, after being incremented by 'augmentation_data_len', could overflow and bypass the 'start >= end' check, let's focus on the specific ELF field related to this vulnerability.
+
+The vulnerability arises during the parsing of debug information segments within ELF files, specifically in the handling of augmentation data associated with Common Information Entries (CIEs) and Frame Descriptor Entries (FDEs) in the DWARF debugging information. This augmentation data is part of the DWARF sections (.debug_frame, .eh_frame) of an ELF file. 
+
+To cause the overflow and bypass the check, an attacker would craft an ELF file with a CIE or FDE that includes augmentation data length (`augmentation_data_len`) crafted to cause 'start + augmentation_data_len' to overflow. This would typically involve specifying a very large value for the augmentation data length in the crafted ELF file, which, when added to the current position pointer ('start'), results in an arithmetic overflow. This overflow could make the new 'start' position appear to be less than the 'end' position, even when in reality, it should be far beyond it, leading to a buffer over-read.
+
+So, the ELF field involved in invoking CVE-2017-16828 is the length field of the augmentation data within the CIE and FDE entries in the DWARF debug sections, specifically how this length is handled and validated when reading the augmentation data from the ELF file.

@@ -1,0 +1,13 @@
+The vulnerability CVE-2018-13785 in libpng is specifically related to the processing of PNG image files, and the critical fields from the PNG file format that interact to invoke this vulnerability are:
+
+1. **Width** (`png_ptr->width`): Represents the width of the PNG image. A larger width value increases the potential size of a single row of pixel data, which is a crucial factor in the calculation that led to the integer overflow.
+
+2. **Bit Depth** (`png_ptr->bit_depth`): Indicates the number of bits per sample or per palette index (not per pixel). This value influences the overall size of the pixel data as it determines whether 1 or 2 bytes are used per channel for each pixel.
+
+3. **Channels** (`png_ptr->channels`): Denotes the number of basic channels in the image, such as RGB (3 channels) or RGBA (4 channels). The number of channels affects the size of the data for each row by dictating how many samples are present per pixel.
+
+4. **Interlacing** (`png_ptr->interlaced`): A flag indicating whether the PNG image uses Adam7 interlacing. The vulnerability's calculation includes a conditional addition based on this property, potentially influencing the `row_factor` due to how interlaced images are processed differently.
+
+5. **Height** (`png_ptr->height`): This represents the height of the PNG image. While the immediate issue was with the calculation of row data size (`row_factor`), the height is involved in checking against an overflowed `row_factor` which could falsely pass validation checks if `row_factor` was improperly calculated due to integer overflow.
+
+The vulnerability arises from the way these fields interact within the `png_check_chunk_length` function in the context of calculating `row_factor` for ensuring proper chunk length and data allocation during image processing. If the calculation of `row_factor` overflows due to insufficient handling of large values resulting from combinations of width, bit depth, and channels, it could lead to an incorrect allocation size, causing issues like divide-by-zero errors and potential Denials of Service (DoS) when processing specially crafted PNG files. The inclusion of the interlacing condition adds another layer of complexity to how the size calculations are managed.

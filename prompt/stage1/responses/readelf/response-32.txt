@@ -1,0 +1,11 @@
+The root cause of CVE-2017-16828 in the GNU Binutils 2.29.1 appears to be an integer overflow vulnerability related to improperly handling the length of augmentation data in ELF (Executable and Linkable Format) files. The vulnerability was present in the `display_debug_frames` function within `dwarf.c`, which is responsible for handling debugging information in the ELF file format.
+
+Specifically, the vulnerability involves the handling of augmentation data length (`augmentation_data_len`). An attacker could craft an ELF file with corrupt augmentation data that, when processed by the affected Binutils tool, could lead to an integer overflow. This overflow could consequently cause a heap-based buffer over-read, potentially leading to a denial of service (application crash) or possibly allowing the attacker to execute arbitrary code or cause other unspecified impacts.
+
+The patch addresses this vulnerability by:
+
+1. Changing the data type of `augmentation_data_len` from `unsigned long` to `bfd_size_type`, which is more appropriate for handling sizes and can help prevent type-related overflows.
+2. Introducing a check for integer overflow when comparing `augmentation_data_len` with the remaining size of the buffer (`end - start`). This is done by ensuring that `augmentation_data_len` does not exceed the buffer size and that the calculation does not wrap around, which could previously happen due to improper type casting or handling of large, unsigned values.
+3. Adding the `display_augmentation_data` function to cleanly and safely handle the display of augmentation data, incorporating the above changes to prevent buffer over-reads by ensuring that all operations stay within the bounds of the allocated memory.
+
+In summary, the root cause revolves around improper handling and validation of user-supplied lengths for augmentation data in ELF files, combined with the use of data types that do not properly safeguard against size and overflow issues. The applied patch addresses these concerns by adjusting data types, introducing overflow checks, and refining the logic for displaying augmentation data to handle it in a safe and bounded manner.

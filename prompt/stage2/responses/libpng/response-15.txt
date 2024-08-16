@@ -1,0 +1,13 @@
+The CVE-2018-13785 vulnerability in libpng 1.6.34 is invoked through incorrect calculations related to processing PNG files, particularly involving the `row_factor` variable in the `png_check_chunk_length` function. From the information discussed previously, the fields from the PNG file that contribute to invoking this vulnerability include:
+
+1. **Width (`png_ptr->width`)**: The width of the PNG image. It's directly used in the calculation of `row_factor`, and larger values can contribute to the risk of an integer overflow.
+
+2. **Channels (`png_ptr->channels`)**: This represents the number of color channels. For example, RGB color mode would have 3 channels, RGBA would have 4, and so on. This field also contributes to the calculation of `row_factor`.
+
+3. **Bit Depth (`png_ptr->bit_depth`)**: The bit depth per channel. If the bit depth is greater than 8, it influences the multiplier in the calculation of `row_factor`, potentially increasing the result and thus the risk of overflow.
+
+4. **Interlaced (`png_ptr->interlaced`)**: This indicates if the image uses interlacing, a method of ordering image data that's meant to allow progressive image rendering. It adds an additional constant value to the `row_factor` calculation if interlacing is used, albeit to a much lesser extent than the other factors.
+
+5. **Height (`png_ptr->height`)**: Though not part of the `row_factor` calculation directly, the height is used right after in conjunction with `row_factor` to determine if a `PNG_UINT_32_MAX/row_factor` overflow might occur, indicating it's part of the conditions leading to the CVE invocation.
+
+The vulnerability specifically arises when these fields – in combination within certain calculations – lead to an integer overflow. This overflow, in turn, is capable of causing a divide-by-zero error when the system processes an incorrectly calculated `row_factor` as part of a PNG file's data handling, leading to potential denial of service (DoS) conditions. The patch addresses this by properly calculating `row_factor` taking into account the sizes and potential overflow conditions explicitly using `size_t` data types for the operations involved.

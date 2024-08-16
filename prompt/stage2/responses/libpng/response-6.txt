@@ -1,0 +1,17 @@
+The vulnerability represented by CVE-2018-13785 in the libpng library is triggered during the processing of PNG files, specifically relating to how the `row_factor` is calculated in the `png_check_chunk_length` function. Based on the provided information from the patch and the description of the issue, the fields in the PNG file that are directly related to invoking this CVE include:
+
+- **Width**: Represented by `png_ptr->width` in the code. 
+- **Channels**: Derived from the color type of the PNG file, it's represented as `png_ptr->channels`.
+- **Bit Depth**: Represented by `png_ptr->bit_depth`. 
+
+Together, these fields are used in the calculation of `row_factor`, which, if manipulated through a crafted PNG file, could lead to an integer overflow. In particular:
+
+- A PNG file with an excessively large `width` could contribute to causing an overflow in the multiplication that calculates `row_factor`.
+- The number of `channels`, which depends on the color type of the PNG (e.g., grayscale, RGB, palette-based, with or without alpha), also plays a role in the calculation and, thus, the potential overflow.
+- The `bit depth`, indicating the number of bits per channel, further impacts the size of `row_factor`.
+
+Additionally, while not directly mentioned in the description of the CVE or the patch, it's implied that how `png_ptr->interlaced` (indicating whether the image uses interlacing) affects the calculation could also play a role but primarily as an addition after the multiplication that can trigger the overflow. 
+
+The critical issue comes from the fact that manipulating these fields in a PNG file could cause `row_factor` to overflow when calculated, leading to the possible divide-by-zero error and resultant denial of service (DoS) as the application attempts to process such a crafted image.
+
+In summary, manipulating the `Width`, `Channels`, and `Bit Depth` fields of a PNG file are related to invoking this CVE during the image processing in vulnerable versions of the libpng library.

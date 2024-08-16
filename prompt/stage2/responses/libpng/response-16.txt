@@ -1,0 +1,13 @@
+The CVE-2018-13785 vulnerability in libpng 1.6.34 can be invoked by manipulating several fields in a PNG file, but the key factors that directly relate to invoking this CVE, based on the previous information, include:
+
+1. **Width (`png_ptr->width`)**: The width of the PNG image is part of the calculation for `row_factor`. Maliciously large values can contribute to triggering the integer overflow.
+
+2. **Bit Depth (`png_ptr->bit_depth`)**: This affects the calculation since the multiplier changes based on whether the bit depth is greater than 8. It's used to decide if each pixel's size should be doubled.
+
+3. **Interlaced Property (`png_ptr->interlaced`)**: Whether the image is interlaced affects the calculation, though to a lesser extent, by adding either 0 or 6 to `row_factor`.
+
+4. **Channels (`png_ptr->channels`)**: The number of color channels in the image also plays into the calculation of `row_factor`, affecting the overall multiplication.
+
+The vulnerability stems from how these fields are used together in the calculation of `row_factor` within the `png_check_chunk_length` function. Specifically, manipulating the Width and Bit Depth, in combination with the number of Channels and whether the image is Interlaced, can lead to a value of `row_factor` that, when improperly calculated due to lack of safe casting to a larger integer type, causes an integer overflow. This overflow then potentially leads to a divide-by-zero situation when the overflowed value is used in further calculations, triggering a denial of service condition. 
+
+Thus, the fields related to invoking this CVE are fundamentally about the dimensions and encoding of the image (width, bit depth), along with its color and scanline properties (channels and interlacing), which are critical in reproducing the crafted PNG files that could exploit this vulnerability.

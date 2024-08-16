@@ -1,0 +1,8 @@
+Seed 1:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 1.4% (1703 of 119451 lines)
+  functions..: 3.5% (293 of 8299 functions)
+  branches...: 0.8% (572 of 69611 branches)
+

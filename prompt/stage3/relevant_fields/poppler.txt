@@ -1,0 +1,2 @@
+You are not correct.
+The field relevant for invoking this CVE is the object number of a stream object in a valid PDF file.

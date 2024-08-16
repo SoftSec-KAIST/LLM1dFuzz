@@ -1,0 +1,68 @@
+Given the information about CVE-2017-9047, what do you think the root cause is?
+
+
+- Description
+
+A buffer overflow was discovered in libxml2 20904-GITv2.9.4-16-g0741801. The function xmlSnprintfElementContent in valid.c is supposed to recursively dump the element content definition into a char buffer 'buf' of size 'size'. The variable len is assigned strlen(buf). If the content->type is XML_ELEMENT_CONTENT_ELEMENT, then (i) the content->prefix is appended to buf (if it actually fits) whereupon (ii) content->name is written to the buffer. However, the check for whether the content->name actually fits also uses 'len' rather than the updated buffer length strlen(buf). This allows us to write about "size" many bytes beyond the allocated memory. This vulnerability causes programs that use libxml2, such as PHP, to crash.
+
+
+- Patch
+
+commit 932cc9896ab41475d4aa429c27d9afd175959d74
+Author: Nick Wellnhofer <wellnhofer@aevum.de>
+Date:   Sat Jun 3 02:01:29 2017 +0200
+
+    Fix buffer size checks in xmlSnprintfElementContent
+    
+    xmlSnprintfElementContent failed to correctly check the available
+    buffer space in two locations.
+    
+    Fixes bug 781333 (CVE-2017-9047) and bug 781701 (CVE-2017-9048).
+    
+    Thanks to Marcel Böhme and Thuan Pham for the report.
+
+diff --git a/valid.c b/valid.c
+index 19f84b82..9b2df56a 100644
+--- a/valid.c
++++ b/valid.c
+@@ -1262,22 +1262,23 @@ xmlSnprintfElementContent(char *buf, int size, xmlElementContentPtr content, int
+         case XML_ELEMENT_CONTENT_PCDATA:
+             strcat(buf, "#PCDATA");
+ 	    break;
+-	case XML_ELEMENT_CONTENT_ELEMENT:
++	case XML_ELEMENT_CONTENT_ELEMENT: {
++            int qnameLen = xmlStrlen(content->name);
++
++	    if (content->prefix != NULL)
++                qnameLen += xmlStrlen(content->prefix) + 1;
++	    if (size - len < qnameLen + 10) {
++		strcat(buf, " ...");
++		return;
++	    }
+ 	    if (content->prefix != NULL) {
+-		if (size - len < xmlStrlen(content->prefix) + 10) {
+-		    strcat(buf, " ...");
+-		    return;
+-		}
+ 		strcat(buf, (char *) content->prefix);
+ 		strcat(buf, ":");
+ 	    }
+-	    if (size - len < xmlStrlen(content->name) + 10) {
+-		strcat(buf, " ...");
+-		return;
+-	    }
+ 	    if (content->name != NULL)
+ 		strcat(buf, (char *) content->name);
+ 	    break;
++        }
+ 	case XML_ELEMENT_CONTENT_SEQ:
+ 	    if ((content->c1->type == XML_ELEMENT_CONTENT_OR) ||
+ 	        (content->c1->type == XML_ELEMENT_CONTENT_SEQ))
+@@ -1319,6 +1320,7 @@ xmlSnprintfElementContent(char *buf, int size, xmlElementContentPtr content, int
+ 		xmlSnprintfElementContent(buf, size, content->c2, 0);
+ 	    break;
+     }
++    if (size - strlen(buf) <= 2) return;
+     if (englob)
+         strcat(buf, ")");
+     switch (content->ocur) {

@@ -1,0 +1,17 @@
+The root cause of CVE-2017-9047 in the libxml2 library is related to improper buffer size calculations and checks within the `xmlSnprintfElementContent` function in the valid.c file. Specifically, the vulnerability stems from the way the function updates and checks the available space in the buffer when appending strings to it.
+
+Here's a breakdown of the issues leading to the vulnerability:
+
+1. **Inadequate Buffer Length Updates**: Initially, the variable `len` is assigned the length of the buffer `buf` using `strlen(buf)`. This length is supposed to represent the amount of filled space in the buffer. However, as the function proceeds to append more content (specifically, when adding `content->prefix` and `content->name`), it does not correctly update `len` to reflect the new length of the buffer after each append operation.
+
+2. **Faulty Space Check for Additional String Appends**: The checks to determine if there is enough space left in the buffer for appending more strings use the outdated `len` value rather than the current length of the buffer. Since `len` is not updated after each append operation, these checks can pass, allowing the function to write beyond the allocated memory for the buffer. This condition leads to a buffer overflow.
+
+3. **Human Error in Programming Logic**: At its core, the vulnerability is caused by a misjudgment in how to properly manage buffer sizes and dynamically adjust to the lengths of strings being appended, particularly within the logic that handles the concatenation of XML element names and prefixes.
+
+The patch addresses these issues by:
+
+- Introducing a new variable `qnameLen` to calculate the combined length of `content->name` and, if present, `content->prefix` along with a ':' character. This calculation is done *before* attempting to append these strings to the buffer.
+- Updating the space check to compare the newly calculated `qnameLen` against the actual remaining space in the buffer (`size - len`), ensuring that there is enough space before proceeding with the append operations.
+- Including all necessary logic within an additional block for the `XML_ELEMENT_CONTENT_ELEMENT` case, thereby improving code clarity and ensuring that space checks and string appends are properly managed.
+
+By fixing these specific issues, the patch prevents the overflow by ensuring all buffer space checks are accurate and based on updated buffer lengths, thus rectifying the root cause of CVE-2017-9047.

@@ -1,0 +1,2 @@
+You are not correct.
+The root cause of this CVE is that the buffer length 'len' is not updated after appending 'content->prefix' to the buffer.

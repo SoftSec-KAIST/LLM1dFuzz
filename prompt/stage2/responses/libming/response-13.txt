@@ -1,0 +1,18 @@
+Apologies for the confusion earlier. Based on the correction and re-examining the provided patch details, it becomes clear that the handling of data from the Protect tag in the SWF file is central to this CVE. Specifically, CVE-2016-9827 arises from how the password field within the Protect tag is parsed by the `listswf` tool in libming.
+
+From the patch details:
+
+```diff
+-      parserrec->Password = readBytes (f, length);
++      parserrec->Password = readString (f);
+```
+
+It was pointed out that the root cause is related to the 'readBytes' function not ensuring the parsed password is null-terminated, which can lead to a buffer over-read situation. Given this correction, it indicates that the password extraction process from SWF files, particularly from fields that make use of the Protect tag, are where the vulnerability is triggered.
+
+**The Protect Tag in SWF Files:**
+
+- The Protect tag is used in SWF files to mark them as being protected. This tag can include a password field that supposedly limits access or modifications unless the correct password is provided.
+- According to the patch, prior to being fixed, the mechanism for reading the password from the Protect tag's data involved using the `readBytes(f, length)` function. This function likely read a sequence of bytes based on a specified length directly from the file without appending a null character (`\0`) to signify the end of the string. This behavior could lead to attempting to access memory beyond the intended buffer when the password string is used later in the program, thus causing a denial of service (DoS) through a buffer over-read.
+- The patch addresses this issue by switching to `readString(f)`. Unlike `readBytes`, the `readString` function is presumably designed to read characters until a terminating null character is encountered, ensuring the string is properly null-terminated and preventing a buffer over-read.
+
+In summary, the SWF’s Protect tag, specifically the password field within it, is directly related to triggering CVE-2016-9827. The issue stemmed from improper handling of this password data due to the 'readBytes' function not ensuring null termination, which the patch corrects by ensuring the data is treated as a properly terminated string.

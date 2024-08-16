@@ -1,0 +1,2 @@
+You are not correct.
+The field relevant for invoking this CVE is the B code in a valid mangled name.

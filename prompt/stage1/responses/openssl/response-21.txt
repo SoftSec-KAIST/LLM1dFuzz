@@ -1,0 +1,7 @@
+The root cause of CVE-2017-3735 is an improper validation of an input used to read data. The specific issue is an out-of-bounds read vulnerability, which occurs while parsing the IPAddressFamily extension in an X.509 certificate. This vulnerability was caused by not sufficiently checking the length of the addressFamily field before proceeding to read data from it.
+
+In the original code, the process assumes that the `addressFamily` field is non-null and contains at least enough data to read two bytes without verifying the actual length of the data available in `addressFamily->data`. This leads to a situation where, if the data is shorter than expected, it would attempt to read beyond the allocated memory for that data. This can cause incorrect processing of the input data, leading to an incorrect display of the certificate information, and in worst cases, could potentially be exploited to cause undefined behavior in applications using OpenSSL to parse X.509 certificates.
+
+The patch fixes this vulnerability by adding an explicit check to ensure that `f->addressFamily->length` is at least 2 bytes long before attempting to read the two bytes from `f->addressFamily->data`. This prevents the out-of-bounds read by ensuring that there is sufficient data to perform the operation, thus mitigating the risk associated with the vulnerability.
+
+Therefore, the root cause is the lack of adequate validation of input data lengths before reading from memory, which led to an unsafe memory access operation.

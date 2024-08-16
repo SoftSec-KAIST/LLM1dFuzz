@@ -1,0 +1,11 @@
+The root cause of CVE-2020-24370 appears to be related to improper handling of negation, specifically in the case of large negative numbers, which can cause an overflow when negated. In Lua 5.4.0, the functions `getlocal` and `setlocal` in `ldebug.c` are designed to access local variables of a function. These functions weren't properly handling cases where a large negative index, such as `2^31` (which is `-2147483648` when negated on systems where `int` is 32-bits), is passed as an argument. This could trigger a negation overflow, leading to incorrect memory access (segmentation fault) due to the calculation of the position of the variable to access.
+
+The problematic code involves the handling of negative numbers when accessing vararg (variable argument list) or local variables. Specifically, the original code did not correctly account for the possibility that negating a large negative integer could result in an overflow. This is particularly problematic in systems where integers are represented using two's complement arithmetic, as the range of representable values is asymmetrical (e.g., in a 32-bit signed integer, the range is -2^31 to 2^31-1).
+
+The patch addresses this issue by changing the condition check and the calculation of the variable position. It changes the handling in `findvararg` function to correctly handle `n` when it is negative, ensuring that the addition or subtraction related to `n` does not lead to overflow or incorrect memory access.
+
+- In the `findvararg` function, the condition was changed to `if (n >= -nextra)`, and the calculation of the position `*pos` was adjusted to subtract `n + 1` from `ci->func - nextra`, ensuring safely handling the negative indexing without causing overflow.
+
+- In the `luaG_findlocal` function, the call to `findvararg` was corrected to pass `n` directly without negating it again (`return findvararg(ci, n, pos);`), facilitating the correct processing of negative indices.
+
+In summary, the root cause is the improper handling of negation for large negative indices in the `getlocal` and `setlocal` functions, which could lead to negation overflow and segmentation faults. The patch fixes this issue by adjusting the conditions and calculations to safely handle negative indices without causing overflows.

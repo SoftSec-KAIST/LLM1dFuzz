@@ -1,0 +1,32 @@
+Given the information about CVE-2016-9827, what do you think the root cause is?
+
+- Description
+
+The _iprintf function in outputtxt.c in the listswf tool in libming 0.4.7 allows remote attackers to cause a denial of service (buffer over-read) via a crafted SWF file.
+
+
+- Patch
+
+commit 459fa79d04dcd240996765727a726e5dc5c38f34
+Author: Balint Reczey <balint@balintreczey.hu>
+Date:   Thu Jan 5 15:51:11 2017 +0100
+
+    Parse Protect tag's Password as string
+    
+    Fixes CVE-2016-9827.
+    
+    Fixes: #59
+
+diff --git a/util/parser.c b/util/parser.c
+index caa9cadb..96b12328 100644
+--- a/util/parser.c
++++ b/util/parser.c
+@@ -2752,7 +2752,7 @@ parseSWF_PROTECT (FILE * f, int length)
+   PAR_BEGIN (SWF_PROTECT);
+ 
+   if( length != 0 ) {
+-  	parserrec->Password = readBytes (f, length);
++  	parserrec->Password = readString (f);
+   } else {
+   	parserrec->Password = NULL;
+   }

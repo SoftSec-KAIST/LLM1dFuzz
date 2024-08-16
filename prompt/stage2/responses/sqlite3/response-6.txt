@@ -1,0 +1,9 @@
+The vulnerability, CVE-2019-19923, in SQLite is specifically triggered in scenarios involving the use of `SELECT DISTINCT` in conjunction with a `LEFT JOIN` where the right-hand side of the join is a view. The critical field and SQL construct that relates to invoking this CVE thus involve:
+
+1. **SELECT DISTINCT**: This is a SQL command used to return only distinct (different) values. In the context of this vulnerability, its use alongside specific `LEFT JOIN` operations leads to the problematic behavior.
+
+2. **LEFT JOIN**: A type of SQL join that returns all records from the left table (table1), and the matched records from the right table (table2). The result is NULL from the right side if there is no match.
+
+3. **Views**: A virtual table based on the result-set of an SQL statement. The right-hand side of the `LEFT JOIN` being a view is a critical aspect of the vulnerability.
+
+The combination of these SQL constructs and operations in a specific manner leads to conditions where SQLite's optimization strategies (specifically query flattening) mishandle the execution plan, causing incorrect results or a NULL pointer dereference as highlighted in CVE-2019-19923. The field in SQL that directly relates to this CVE involves the strategic incorporation of `SELECT DISTINCT` and `LEFT JOIN` when the latter operates on a view.

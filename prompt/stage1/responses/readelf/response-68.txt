@@ -1,0 +1,15 @@
+The root cause of CVE-2017-16828 lies in the handling of ELF (Executable and Linkable Format) files by GNU Binutils, particularly within the `display_debug_frames` function in `dwarf.c`. Specifically, the vulnerability is tied to two key issues: an integer overflow and a heap-based buffer over-read. Let's break down how the patch addresses these issues:
+
+### Integer Overflow
+
+The patch transitions the type used to represent the length of augmentation data from a regular integer (or `unsigned long`) to `bfd_size_type`. This change is significant because `bfd_size_type` is designed to safely handle sizes of data objects in the Binary File Descriptor (BFD) library, which Binutils uses extensively. This type is better suited to represent sizes of data chunks, especially when working with files where the size could potentially exceed the limits of standard integer types on specific platforms.
+
+### Heap-based Buffer Over-Read
+
+The heap-based buffer over-read is addressed by introducing better checks around the size of augmentation data. By replacing a simple cast and comparison with a check that takes into account the actual bounds of the buffer (`end - start`), the patch ensures that the length of the augmentation data is within the expected range before it attempts to read it or process it any further.
+
+Additionally, the patch introduces a new function, `display_augmentation_data`, to encapsulate the logic for displaying augmentation data. This not only makes the code cleaner but also ensures that any manipulation or display of augmentation data is done in a consistent and controlled manner, further mitigating the risk of buffer over-reads by centralizing how data lengths are handled and displayed.
+
+### Conclusion
+
+The root cause of CVE-2017-16828 revolves around inadequate handling of data lengths within ELF files, which could lead to integer overflows and buffer over-reads. The provided patch addresses these issues by switching to a more suitable data type for representing lengths and by introducing more rigorous checks when dealing with potentially corrupt augmentation data within ELF files. These changes are aimed at preventing crashes (denial of service) and other unspecified impacts that could stem from maliciously crafted ELF files.

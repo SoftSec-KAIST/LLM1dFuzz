@@ -1,0 +1,9 @@
+The vulnerability described in CVE-2017-8393 is related to how the Binary File Descriptor (BFD) library interprets section names in ELF (Executable and Linkable Format) files, specifically relating to SHT_REL and SHT_RELA section types. These section types, defined in the ELF specification, are used for storing relocation information, which is critical for linking and loading processes.
+
+The fields in ELF files directly related to invoking this CVE would be:
+
+1. **`sh_type`**: This field in the section header describes the section's content and semantics. For this vulnerability, the relevant `sh_type` values are `SHT_REL` and `SHT_RELA`, which indicate sections containing relocation entries. The incorrect assumption was that sections of these types would always start with `.rel` or `.rela` prefixes in their names.
+
+2. **Section Names**: The actual names of the sections in the section header string table, which the BFD library assumed to have certain prefixes. The vulnerability was specifically related to the handling of these names. Incorrect handling could lead to buffer over-read errors if the code encountered section names that did not follow the expected naming convention.
+
+The interaction between these two fields and the assumptions in the libbfd code about section naming conventions was at the core of this CVE. When BFD-based tools like `objcopy` and `strip` processed ELF files with SHT_REL/RELA sections not adhering to the naming expectations, it could lead to the described vulnerability being exploited, potentially causing crashes or other unintended behavior due to buffer over-reads. The patch corrected this behavior by removing the reliance on section name prefixes to identify the applicable target sections for relocations, thus addressing the issue.

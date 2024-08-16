@@ -1,0 +1,7 @@
+The root cause of CVE-2017-3735 appears to be the lack of sufficient validation when parsing the IPAddressFamily extension in an X.509 certificate, which could lead to a one-byte overread. This occurs in the function `X509v3_addr_get_afi` responsible for returning the Address Family Identifier (AFI) from the given `IPAddressFamily` structure.
+
+Before the patch, the original code did not check if the `addressFamily->length` was at least 2 bytes long before trying to access `addressFamily->data[0]` and `addressFamily->data[1]`. Since AFI extraction involves reading two bytes (`data[0]` and `data[1]`), it's crucial to ensure that the `addressFamily->data` buffer is at least 2 bytes long to prevent an out-of-bounds read operation.
+
+The patch addresses this issue by adding an additional condition to the initial if-statement that checks not only if the `f`, `f->addressFamily`, and `f->addressFamily->data` are not NULL but also confirms that `f->addressFamily->length` is at least 2 bytes long. If any of these conditions are not satisfied, the function now correctly returns 0 without attempting to access out-of-bound memory.
+
+In summary, the root cause was a missing boundary check on the length of `addressFamily->data` before attempting to read two bytes from it, which could potentially lead to out-of-bound memory access. This was fixed by adding an additional validation step to ensure the length is sufficient for the intended read operations, thus preventing the one-byte overread vulnerability.

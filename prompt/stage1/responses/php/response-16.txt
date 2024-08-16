@@ -1,0 +1,7 @@
+The root cause of CVE-2019-11041 seems to be a heap buffer overflow vulnerability within the PHP EXIF extension when parsing EXIF information from an image using the `exif_read_data()` function. Specifically, the vulnerability arises from the code's failure to adequately check the size of the buffer before attempting to read EXIF data. When the provided data causes the function to read past the allocated buffer, it can lead to information disclosure or cause the application to crash. 
+
+The vulnerable versions of PHP include 7.1.x before 7.1.31, 7.2.x before 7.2.21, and 7.3.x before 7.3.8. The specific issue occurs within the `exif_scan_thumbnail` function, which is meant to scan and read thumbnail data from the EXIF information.
+
+From the details provided in the patch, the addition of a condition to check both the existence of data with `if (!data)` and that `ImageInfo->Thumbnail.size` is not smaller than 4 bytes with `ImageInfo->Thumbnail.size < 4` addresses the vulnerability. This check ensures there is a sufficient buffer size before proceeding, which prevents the potential for reading past the allocated memory.
+
+Therefore, the root cause is inadequate validation of the size of the EXIF data in relation to the buffer allocated for reading this data, leading to heap buffer overflow situations under certain conditions. The provided patch fixes this issue by introducing a new check that ensures there's enough data to proceed, effectively mitigating the risk of buffer overflows by validating input sizes more strictly.

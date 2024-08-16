@@ -1,0 +1,15 @@
+Given the information presented about CVE-2019-19923 and the patch provided, the root cause of the vulnerability appears to be related to the query flattening logic in SQLite's handling of SELECT DISTINCT queries involving a LEFT JOIN where the right-hand side is a view.
+
+Query flattening is an optimization technique used to improve the execution efficiency of SQL queries. When a subquery is flattened, it is merged into the outer query to avoid the overhead of executing two separate query operations. However, for this optimization to be safe and correct under all circumstances, specific conditions must be met. CVE-2019-19923 highlights a case where query flattening leads to unintended behaviors due to the violation of these conditions.
+
+The issue arises when the following conditions are met:
+
+1. The query uses SELECT DISTINCT.
+2. The query involves a LEFT JOIN.
+3. The right-hand side of the LEFT JOIN is a view.
+
+In such cases, the former logic allowed for query flattening even when it shouldn't, potentially leading to stale result registers being accessed. This could yield incorrect results since the registers might contain outdated information from previous operations. Additionally, it could result in a NULL pointer dereference if an OP_IfNullRow opcode is executed on a table that hasn't been properly opened, as the register expected to point to valid data instead points to NULL.
+
+The patch addresses the root cause by extending the conditions under which query flattening is disallowed. Specifically, it adds a new condition (3d) that prevents flattening if the outer query uses DISTINCT. This is done by checking if the `SF_Distinct` flag is set for the outer query and returning 0 (disallowing the flattening) if so. The added condition ensures that the optimizer doesn't apply query flattening in scenarios where it might lead to incorrect results or a NULL pointer dereference, addressing the vulnerability. 
+
+Therefore, the root cause can be summarized as an oversight in the query optimizer's logic, specifically in its handling of query flattening for SELECT DISTINCT queries involving a LEFT JOIN with a view on the right-hand side. The patch corrects this by disabling query flattening in these cases to maintain the integrity and reliability of query execution.

@@ -1,0 +1,21 @@
+Given the detailed nature of CVE-2020-24370 and the information about its root cause, a script intending to exploit this vulnerability would aim to use the debug functionalities (`getlocal` and `setlocal`) inappropriately, by passing large negative numbers to access non-existing local variables. However, please note, crafting an exploit or demonstrating vulnerability exploitation purely for educational or security research purposes should be done with utmost caution and always within the bounds of ethical guidelines and legal permissions.
+
+Here's an example Lua script inspired by the descriptions related to CVE-2020-24370. This script is hypothetical and is intended to illustrate how the described vulnerability might be interacted with, specifically targeting the debug interface's handling of local variables:
+
+```lua
+function vulnerableFunction()
+    local a = 1
+    local b = 2
+    print(debug.getlocal(1, -2147483648))  -- Attempting to exploit the negation overflow vulnerability.
+end
+
+vulnerableFunction()
+```
+
+In this script:
+- We define a function `vulnerableFunction()`, which has local variables.
+- We then attempt to use `debug.getlocal(1, -2147483648)` to exploit the vulnerability by passing a large negative index, attempting to trigger the negation overflow described in CVE-2020-24370.
+
+It's important to stress that this code is for illustrative purposes to understand the kind of operations that could exploit the described vulnerability. The actual impact and whether the vulnerability can be exploited would depend on several factors, including the Lua version, the environment in which Lua is running, and any potential mitigations that have been put in place.
+
+**Responsible Disclosure**: If you discover vulnerabilities or exploits in software, always follow responsible disclosure practices. This means reporting the vulnerabilities to the software vendors or maintainers and giving them ample time to create and distribute a patch before publicly disclosing the details of the exploit.

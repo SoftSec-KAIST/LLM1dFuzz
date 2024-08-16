@@ -1,0 +1,13 @@
+The root cause of CVE-2017-16828 in GNU Binutils 2.29.1, specifically within the handling of ELF files in the `display_debug_frames` function in `dwarf.c`, is related to improper handling of augmentation data length that can lead to an integer overflow and subsequently, a heap-based buffer over-read, and potentially an application crash or other unspecified impact. 
+
+This vulnerability stems from the fact that the length of the augmentation data is not properly checked or handled, allowing for situations where crafted ELF files with corrupt augmentation data can cause the software to read beyond the bounds of allocated memory. The key issues contributing to this vulnerability include:
+
+1. **Use of inappropriate data type for augmentation_data_len**: Initially, the data type used for `augmentation_data_len` was not sufficiently robust to safely handle scenarios where the length of the augmentation data could exceed the maximum value representable by the type, leading to an integer overflow.
+
+2. **Insufficient Validation**: There was a lack of adequate validation to ensure that the computed length of the augmentation data does not exceed the actual bounds of the memory buffer holding the data. This could allow a maliciously crafted file to specify an augmentation data length that is larger than expected, leading to a buffer over-read.
+
+3. **Improper Error Handling**: The software did not properly account for scenarios where the computed start of the augmentation data could be beyond the bounds of the buffer or where the computed length could result in arithmetic underflow or overflow conditions.
+
+The patch addresses these issues by changing the type of `augmentation_data_len` to `bfd_size_type`, which is more suitable for representing sizes and lengths in a safer manner, and by introducing checks to validate that the `augmentation_data_len` does not exceed the bounds of the memory allocated for the ELF file being processed. Additionally, it introduces a more robust handling and reporting mechanism for situations where the augmentation data length is found to be corrupt or otherwise invalid.
+
+In summary, the root cause is the inadequate type choice and lack of validation for handling the length of augmentation data in ELF files, which, when exploited, can lead to denial of service or other impacts. The applied fixes aim to correct these deficiencies by ensuring proper type usage and implementing necessary bounds checks.

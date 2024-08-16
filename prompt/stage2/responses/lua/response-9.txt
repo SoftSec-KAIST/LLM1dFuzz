@@ -1,0 +1,5 @@
+The field in Lua that is related to invoking CVE-2020-24370 primarily pertains to debugging functionality, specifically within the handling of local variables. The key functions involved are `getlocal` and `setlocal`, which are utilized for accessing and modifying local variables at runtime during debugging sessions. These functions operate within the context of the debugging interface provided by Lua, as indicated by their implementation in the file `ldebug.c`.
+
+When these functions (`getlocal` and `setlocal`) are invoked with a large, specially crafted index value (such as 2^31), the integer overflow and subsequent negation can occur, leading to a segmentation fault. The overflow results from attempting to negate an integer value that, due to its size, exceeds the bounds of representable values in an integer data type, causing an overflow and unexpected behavior.
+
+In summary, the field in Lua related to invoking CVE-2020-24370 involves the debugging interface, particularly the functions for manipulating local variables (`getlocal` and `setlocal`). The vulnerability is triggered by how these functions handle very large index values.

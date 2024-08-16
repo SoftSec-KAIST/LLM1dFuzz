@@ -1,0 +1,2 @@
+You are not correct. 
+The fields relevant for invoking this CVE are the width, color type, bit depth, and interlace method fields of the IHDR in a valid PNG file.

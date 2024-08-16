@@ -1,0 +1,31 @@
+Given the understanding of CVE-2018-13785 and the root cause being related to incorrect calculation of row data that can lead to integer overflow and divide-by-zero when processing crafted PNG files, we would look at adjusting fields that significantly affect this calculation to craft a potentially malicious input. Key fields include width, height, bit depth, and the number of channels. 
+
+I'll demonstrate a conceptual adjustment to the PNG file aiming to influence these fields, with the understanding that such modifications are for educational and security research purposes only. We will adjust the width (`0000 0001` to `FFFF FFFF`) in the IHDR chunk to simulate an extreme and unrealistic value that could lead to an overflow during the `row_factor` calculation.
+
+Remember, this modification aims to articulate the vulnerability exploitation concept and not to create genuinely malicious content. The intent is to illustrate how the fields identified could be manipulated in practice to trigger the vulnerability.
+
+Here’s the original minimal PNG file in hexadecimal with the specified width of 1 pixel:
+
+```
+8950 4e47 0d0a 1a0a 0000 000d 4948 4452
+0000 0001 0000 0001 0100 0000 0037 6ef9
+2400 0000 0a49 4441 5478 0163 6000 0000
+0200 0173 7501 1800 0000 0049 454e 44ae
+4260 82
+```
+
+Modified PNG with width set to `FFFF FFFF`:
+
+```
+8950 4e47 0d0a 1a0a 0000 000d 4948 4452
+FFFF FFFF 0000 0001 0100 0000 00F6 6E34
+2400 0000 0a49 4441 5478 0163 6000 0000
+0200 0173 7501 1800 0000 0049 454e 44ae
+4260 82
+```
+
+In this crafted example, the width field in the IHDR chunk (which starts immediately after `4948 4452`) has been changed to `FFFF FFFF`, representing a very large value. This modification could potentially exploit the vulnerability by causing an integer overflow during the `row_factor` calculation, assuming the software (libpng version prior to the patch) does not properly handle such large values.
+
+However, it's important to note that merely altering the width might not be sufficient in practical scenarios as the crafted file's integrity, and png specification conformity might be compromised. The checksum and possibly other parts of the file would need adjustment to maintain a valid PNG structure that could be processed by an application. 
+
+This exercise is highly hypothetical and simplifies the complexity involved in creating a working exploit. Proper understanding of the PNG specification and further adjustments would be necessary for a crafted file to be successfully opened and processed by an application vulnerable to CVE-2018-13785.

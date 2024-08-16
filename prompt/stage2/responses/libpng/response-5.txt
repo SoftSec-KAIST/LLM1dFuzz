@@ -1,0 +1,13 @@
+Based on the information previously discussed about CVE-2018-13785, the fields in a PNG file related to invoking this vulnerability are:
+
+1. **Width**: As part of the calculation for `row_factor`, the `width` of the PNG image is directly used. This parameter is crucial because it significantly influences the result of the calculation. Large enough values of `width`, especially when combined with high values in other related fields, can lead to the integer overflow condition the CVE describes.
+
+2. **Channels**: This parameter indicates the number of color channels in the image. It also influences the calculation of `row_factor` as it is directly multiplied by the `width` and the bit depth conditional factor. Depending on the image format, typical values might include 1 (for grayscale images), 3 (for RGB images), or 4 (for RGBA images with an alpha channel).
+
+3. **Bit Depth (`bit_depth`)**: This parameter defines the number of bits per sample or per palette index (not per pixel), which directly affects the memory footprint of a single pixel or channel within the image. A higher `bit_depth` value can significantly increase the `row_factor` value during the vulnerable calculation. It influences the calculation differently based on whether it's greater than 8, which then multiplies the factors by 2.
+
+4. **Interlaced (`interlaced`)**: Indicating if the image uses interlacing, this is a binary condition that, when true (or present), adds an additional factor (+6) to the `row_factor` calculation. Interlacing is a way of encoding a bitmap image such that a person who pauses the downloading will see a more blocky, less detailed, but recognizable version of the image.
+
+5. **Height**: While this field isn't directly part of the vulnerable calculation for `row_factor`, it participates in the subsequent checks that lead to the decision-making process that could trigger the divide-by-zero when combined with the miscalculated `row_factor`.
+
+The vulnerability arises when these fields are manipulated to create a crafted PNG file with dimensions (in terms of `width`, `height`, `channels`, `bit_depth`, and whether or not the image is `interlaced`) that lead to an improper calculation of `row_factor`, an integer overflow, and, in certain cases, a resultant divide-by-zero operation—causing a denial of service.

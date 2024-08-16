@@ -1,0 +1,80 @@
+Seed 1:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 15.9% (9555 of 60116 lines)
+  functions..: 25.1% (820 of 3268 functions)
+  branches...: 10.9% (4298 of 39524 branches)
+
+Seed 2:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 9.8% (5916 of 60116 lines)
+  functions..: 17.5% (572 of 3268 functions)
+  branches...: 6.1% (2417 of 39524 branches)
+
+Seed 3:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 9.8% (5902 of 60116 lines)
+  functions..: 17.5% (572 of 3268 functions)
+  branches...: 6.1% (2395 of 39524 branches)
+
+Seed 4:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 9.8% (5918 of 60116 lines)
+  functions..: 17.6% (574 of 3268 functions)
+  branches...: 6.1% (2406 of 39524 branches)
+
+Seed 5:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 16.1% (9670 of 60116 lines)
+  functions..: 25.3% (828 of 3268 functions)
+  branches...: 11.0% (4353 of 39524 branches)
+
+Seed 6:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 14.0% (8400 of 60116 lines)
+  functions..: 23.5% (767 of 3268 functions)
+  branches...: 9.1% (3614 of 39524 branches)
+
+Seed 7:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 14.7% (8807 of 60116 lines)
+  functions..: 24.1% (789 of 3268 functions)
+  branches...: 9.7% (3845 of 39524 branches)
+
+Seed 8:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 15.0% (9035 of 60116 lines)
+  functions..: 24.2% (791 of 3268 functions)
+  branches...: 10.2% (4015 of 39524 branches)
+
+Seed 9:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 14.0% (8415 of 60116 lines)
+  functions..: 23.5% (769 of 3268 functions)
+  branches...: 9.1% (3616 of 39524 branches)
+
+Seed 10:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 15.8% (9497 of 60116 lines)
+  functions..: 25.1% (819 of 3268 functions)
+  branches...: 10.8% (4258 of 39524 branches)
+

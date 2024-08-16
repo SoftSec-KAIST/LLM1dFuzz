@@ -1,0 +1,34 @@
+Given the context of CVE-2018-13785 and its root cause, crafting a PNG file that is likely to trigger the vulnerability would involve manipulating the fields related to the calculation that leads to an integer overflow and subsequent divide-by-zero error. The fields of interest are the `width` (in the IHDR chunk), `bit depth`, and potentially manipulating `channels` and `interlacing`. Notably, adjusting the `width` to a large value can directly influence the calculation of `row_factor` since it's part of the multiplication.
+
+**Original IHDR Chunk:**
+```
+IHDR
+00000001 Width
+00000001 Height
+01 Bit depth
+00 Color type
+0000 Compression, filter, interlace
+376ef924 CRC
+```
+In the original minimal PNG, the width and height are set to 1 (`00000001`). To potentially trigger the vulnerability, we would want to set the `width` to an excessively large value. However, changing just the width in the IHDR chunk without breaking the file format requires careful consideration, especially with respect to maintaining a valid CRC.
+
+Given that the purpose here is to conceptually understand how to craft such a file for research purposes, let's propose a modification: increasing the width. For simplicity, and because calculating the CRC for a new width on-the-fly here is not practical without a tool, I will not provide a recalculated CRC. Keep in mind that in a real scenario, the CRC checks would need to be passed, requiring the CRC to be recalculated for the modified chunk.
+
+**Modified IHDR Chunk with Conceptually Increased Width:**
+```
+IHDR
+FFFFFFFF Width (This would be the maximum value for a 32-bit unsigned integer, theoretically aiming to trigger the overflow.)
+00000001 Height
+01 Bit depth
+00 Color type
+0000 Compression, filter, interlace
+```
+**Hexadecimal Representation:**
+```
+8950 4e47 0d0a 1a0a 0000 000d 4948 4452
+FFFFFFFF 0000 0001 0100 0000 0037 6ef9
+24...
+```
+**Disclaimer:** The above modification is hypothetical and meant for illustrative purposes in the context of understanding CVE-2018-13785. The CRC and other relevant components (like the rest of the file structure) are not adjusted here. Crafting and testing such a file for exploitative purposes without the correct CRC and in environments not designed for security testing is not advised and could lead to unexpected results.
+
+In a controlled environment for security research, a specialist would adjust the width as shown, then accurately recalculate the CRC for the IHDR chunk, and ensure the file adheres to the PNG format specifications, testing if the manipulated dimensions impact `png_check_chunk_length` as theorized.

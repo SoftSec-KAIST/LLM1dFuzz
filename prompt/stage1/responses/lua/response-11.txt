@@ -1,0 +1,9 @@
+Based on the information provided about CVE-2020-24370 and the patch that fixes the issue, the root cause of the vulnerability in Lua 5.4.0 can be inferred as a negation overflow problem in the handling of local variable access functions `getlocal` and `setlocal`.
+
+In Lua, `getlocal` and `setlocal` functions are used to access local variables by their numerical indices. If a very large index is used (such as 2^31), due to the way negation was handled, an integer overflow could occur. This overflow could lead to accessing memory out of the bounds of valid data, causing a segmentation fault and potentially leading to a crash or the execution of malicious code.
+
+The patch fixes the issue by changing how negative indices are calculated and verified in the `findvararg` function, which is called from `luaG_findlocal`. The original code did not correctly check for negation overflow (`if (n <= nextra)`), causing improper memory access when large values (like 2^31) are negated. The patch introduces a check that effectively prevents negation overflow by ensuring that `n`, when it is negative, is always greater than or equal to `-nextra`. This prevents the calculation from producing an out-of-bounds access.
+
+In the patch, `-nextra + (n - 1)` was modified to `-nextra - (n + 1)` when `n` is negative, and a check `if (n >= -nextra)` was added to verify that `n` after negation does not cause an overflow and remains within valid bounds. The negation logic correction ensures that accessing local variables using large negative indices does not result in a buffer overflow, addressing the vulnerability.
+
+In summary, the root cause of CVE-2020-24370 was a negation overflow in `getlocal` and `setlocal` functions, which could lead to out-of-bounds memory access. The issue was resolved by fixing the logic that calculates and checks the bounds for negative indices, preventing the overflow and ensuring safe memory access.

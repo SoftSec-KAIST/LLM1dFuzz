@@ -1,0 +1,48 @@
+Given the information about CVE-2019-19923, what do you think the root cause is?
+
+- Description
+
+flattenSubquery in select.c in SQLite 3.30.1 mishandles certain uses of SELECT DISTINCT involving a LEFT JOIN in which the right-hand side is a view. This can cause a NULL pointer dereference (or incorrect results).
+
+
+- Patch
+
+commit 396afe6f6aa90a31303c183e11b2b2d4b7956b35
+Author: drh <drh@noemail.net>
+Date:   Wed Dec 18 20:51:58 2019 +0000
+
+    Continue to back away from the LEFT JOIN optimization of check-in [41c27bc0ff1d3135]
+    by disallowing query flattening if the outer query is DISTINCT.  Without this fix,
+    if an index scan is run on the table within the view on the right-hand side of the
+    LEFT JOIN, stale result registers might be accessed yielding incorrect results,
+    and/or an OP_IfNullRow opcode might be invoked on the un-opened table, resulting
+    in a NULL-pointer dereference.  This problem was found by the Yongheng and Rui fuzzer.
+
+    FossilOrigin-Name: 862974312edf00e9d1068115d1a39b7235b7db68b6d86b81d38a12f025a4748e
+
+diff --git a/src/select.c b/src/select.c
+index 26c72d6da..a94c4236e 100644
+--- a/src/select.c
++++ b/src/select.c
+@@ -3600,6 +3600,7 @@ static void substSelect(
+ **        (3b) the FROM clause of the subquery may not contain a virtual
+ **             table and
+ **        (3c) the outer query may not be an aggregate.
++**        (3d) the outer query may not be DISTINCT.
+ **
+ **   (4)  The subquery can not be DISTINCT.
+ **
+@@ -3796,8 +3797,11 @@ static int flattenSubquery(
+   */
+   if( (pSubitem->fg.jointype & JT_OUTER)!=0 ){
+     isLeftJoin = 1;
+-    if( pSubSrc->nSrc>1 || isAgg || IsVirtual(pSubSrc->a[0].pTab) ){
+-      /*  (3a)             (3c)     (3b) */
++    if( pSubSrc->nSrc>1                   /* (3a) */
++     || isAgg                             /* (3b) */
++     || IsVirtual(pSubSrc->a[0].pTab)     /* (3c) */
++     || (p->selFlags & SF_Distinct)!=0    /* (3d) */
++    ){
+       return 0;
+     }
+   }

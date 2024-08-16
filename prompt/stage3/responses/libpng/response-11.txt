@@ -1,0 +1,22 @@
+Given the root cause of CVE-2018-13785, we understand that exploiting the vulnerability requires manipulating the fields of the IHDR chunk of a PNG file to trigger an integer overflow during the calculation of `row_factor` in the `png_check_chunk_length` function. Specifically, fields such as width, color type, bit depth, and the interlace method, when combined with specific values, can cause the vulnerability to manifest. 
+
+For crafting purposes, let’s focus on significantly increasing the 'width' value while maintaining a valid PNG structure to potentially trigger the vulnerability. We should proceed with caution and ensure these manipulations are used only for educational or security research purposes under controlled and ethical circumstances.
+
+The original minimal PNG hexadecimal you’ve provided translates to a 1x1 pixel image with a color depth of 1. Here's the breakdown:
+- IHDR chunk size: `0000000d` (13 bytes)
+- Width: `00000001` (1 pixel)
+- Height: `00000001` (1 pixel)
+- Bit depth: `01`
+- Color type: `00` (Grayscale)
+- Compression method, filter method, and interlace method are standard and not directly relevant to this manipulation.
+
+Given this, to possibly trigger the vulnerability, we could manipulate the 'width' field to use a significantly larger value. For example, changing the width to `FFFFFFF0` (a very large number in hexadecimal).
+
+Here's how the modified portion of the PNG hexadecimal representation would look, with the changed width value:
+```
+8950 4E47 0D0A 1A0A 0000 000D 4948 44
+52 FFFFFFF0 0000 0001 0100 0000 0037 6E F9 24
+```
+This replaces the width `00000001` with `FFFFFFF0`. Remember, our goal is to increase the 'width' significantly to test overflow handling, and altering it to an exceedingly large value might help in triggering the condition that leads to the overflow and subsequent divide-by-zero error.
+
+However, it's crucial to remember that actually attempting to exploit vulnerabilities without permission is illegal and unethical. This example is purely illustrative, aimed at understanding and mitigating potential security risks.

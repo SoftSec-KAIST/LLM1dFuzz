@@ -1,0 +1,9 @@
+The field in ELF (Executable and Linkable Format) files that is directly related to invoking CVE-2017-8393 is the section name field of SHT_REL/SHR_RELA sections. The vulnerability is triggered by the incorrect handling of these section names in the GNU Binutils' Binary File Descriptor (BFD) library, specifically in the implementation of tools like `objcopy` and `strip`.
+
+ELF sections of type SHT_REL and SHT_RELA are used for relocation information. Relocations are used by the linker to adjust symbols and addresses in a program at compile/link time or by the dynamic linker at load/run time. Each of these sections contains an array of relocation entries, where each entry specifies how to modify a symbol location in the executable.
+
+The vulnerability arises from the assumption in the affected Binutils code that these relocation sections' names always start with a `.rel` or `.rela` prefix, signaling their purpose (`.rel` for SHT_REL sections and `.rela` for SHT_RELA sections, where `a` stands for "addend"). The flawed logic in libbfd assumed section names conform to this naming pattern, which is not guaranteed.
+
+When `objcopy` or `strip` operations are performed, and the code encounters a section whose type is SHT_REL or SHT_RELA but whose name does not follow the expected `.rel`/`.rela` naming convention, it leads to a buffer over-read. This is because the code proceeds as if the section has the standard naming convention, potentially reading beyond the boundary of the string buffer allocated for the section name, thus causing the crash highlighted by CVE-2017-8393.
+
+Therefore, the field implicated in invoking CVE-2017-8393 is the `sh_name` field of the section header, which contains the offset to the section name stored in the section header string table `.shstrtab`. Incorrect assumptions about the content (naming patterns) pointed by this field when handling SHT_REL/SHR_RELA sections lead to the vulnerability.

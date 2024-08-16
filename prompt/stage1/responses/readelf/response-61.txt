@@ -1,0 +1,15 @@
+The root cause of CVE-2017-16828 within the GNU Binutils 2.29.1, particularly in the handling of ELF (Executable and Linkable Format) files by the `display_debug_frames` function in `dwarf.c`, can be attributed to an integer overflow issue leading to a heap-based buffer over-read. This flaw occurs when processing crafted ELF files that contain corrupt augmentation data, specifically when determining the length of this data.
+
+To dive into the details, the vulnerability arises because the original implementation did not adequately check the size of the augmentation data length variable, which was susceptible to integer overflow. This oversight allows a specially crafted ELF file to provide an augmentation data length value that overflows when read, potentially leading to a state where the program could read beyond the allocated heap buffer designated for this data. Such an out-of-bounds read could cause the application to crash, leading to a denial of service, or it might even enable further unspecified impacts, such as corruption of data, disclosure of memory contents, or possibly the execution of arbitrary code if exploited.
+
+The root cause analysis hones in on the use of an inadequate data type (`unsigned long`) for representing the `augmentation_data_len` and insufficient validation of the value of `augmentation_data_len` against the actual size of the buffer allocated for the augmentation data. Essentially, the code did not ensure that the length specified in an ELF file's augmentation data would not lead to an integer overflow or that it was even a feasible length given the actual size of the data buffer.
+
+The patch addresses these issues by:
+
+1. **Changing the Data Type**: The type of `augmentation_data_len` was changed from `unsigned long` to `bfd_size_type`, which is more suited for handling sizes and is less prone to overflow.
+
+2. **Adding Overflow Checks**: The patch specifically adds checks to ensure that `augmentation_data_len` does not cause an overflow when compared to the remaining buffer size (`end - start`).
+
+3. **Improving Data Handling**: By implementing a dedicated function `display_augmentation_data` for correctly and safely printing the augmentation data, the patch enhances the robustness of the handling of augmentation data, including its length and content.
+
+In summary, the root cause is tied to inadequate data type usage and missing validation for sizes, which could lead to integer overflows and subsequent buffer over-read scenarios. The provided patch effectively mitigates these risks by updating the variable types and adding essential boundary checks.

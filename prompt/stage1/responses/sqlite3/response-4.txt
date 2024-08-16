@@ -1,0 +1,11 @@
+The root cause of CVE-2019-19923 in SQLite 3.30.1, as indicated by the patch and description, stems from an optimization flaw related to the handling of `SELECT DISTINCT` combined with a `LEFT JOIN` where the right-hand side of the `LEFT JOIN` is a view. 
+
+SQLite attempted to optimize query execution by flattening subqueries. However, when the outer query used `SELECT DISTINCT`, and the inner query (particularly within a view on the right-hand side of a `LEFT JOIN`) was subject to this optimization, two major issues could arise:
+
+1. **Incorrect Results**: The optimization could lead to "stale result registers" being accessed. Stale result registers occur when the optimization mistakenly reuses results from a previous state of the database or a previous execution of a part of the query. This reusage can provide incorrect results because the data in these registers may not represent the current state or correct context of the query's execution.
+
+2. **NULL Pointer Dereference**: If an index scan runs on the table within the view on the right-hand side of the `LEFT JOIN`, and if an `OP_IfNullRow` opcode is invoked on an un-opened table due to the query optimization, it could result in attempting to access a NULL pointer. This is because the optimization incorrectly assumes the availability or state of certain data structures within the database engine, leading to unsafe memory access attempts.
+
+The patch specifically addresses these problems by updating the conditions under which subquery flattening is allowed. It adds a new restriction (marked as **(3d)** in the code comments) that prevents flattening if the outer query is `DISTINCT`. This change ensures that when there's a `SELECT DISTINCT` involved, particularly with a structure that includes a `LEFT JOIN` whose right-hand side is a view, SQLite no longer applies the query flattening optimization that was leading to incorrect results and potential null pointer dereferences.
+
+By making this adjustment, SQLite ensures the integrity of query results under these conditions and eliminates the path that led to unsafe memory access, directly addressing the root cause of CVE-2019-19923.

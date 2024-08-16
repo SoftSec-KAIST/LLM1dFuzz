@@ -1,0 +1,80 @@
+Seed 1:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 5.8% (8828 of 151068 lines)
+  functions..: 12.2% (850 of 6951 functions)
+  branches...: 2.2% (3081 of 139697 branches)
+
+Seed 2:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 5.9% (8931 of 151068 lines)
+  functions..: 12.4% (859 of 6951 functions)
+  branches...: 2.3% (3178 of 139697 branches)
+
+Seed 3:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 6.0% (9056 of 151068 lines)
+  functions..: 12.5% (869 of 6951 functions)
+  branches...: 2.3% (3213 of 139697 branches)
+
+Seed 4:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 5.9% (8898 of 151068 lines)
+  functions..: 12.4% (859 of 6951 functions)
+  branches...: 2.2% (3136 of 139697 branches)
+
+Seed 5:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 5.9% (8933 of 151068 lines)
+  functions..: 12.4% (859 of 6951 functions)
+  branches...: 2.3% (3181 of 139697 branches)
+
+Seed 6:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 5.9% (8961 of 151068 lines)
+  functions..: 12.4% (859 of 6951 functions)
+  branches...: 2.3% (3206 of 139697 branches)
+
+Seed 7:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 5.9% (8949 of 151068 lines)
+  functions..: 12.4% (861 of 6951 functions)
+  branches...: 2.3% (3183 of 139697 branches)
+
+Seed 8:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 5.9% (8905 of 151068 lines)
+  functions..: 12.3% (858 of 6951 functions)
+  branches...: 2.3% (3150 of 139697 branches)
+
+Seed 9:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 5.8% (8828 of 151068 lines)
+  functions..: 12.2% (850 of 6951 functions)
+  branches...: 2.2% (3081 of 139697 branches)
+
+Seed 10:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 5.8% (8828 of 151068 lines)
+  functions..: 12.2% (850 of 6951 functions)
+  branches...: 2.2% (3081 of 139697 branches)
+

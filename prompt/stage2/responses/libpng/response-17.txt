@@ -1,0 +1,13 @@
+The CVE-2018-13785 vulnerability in libpng 1.6.34 is related to the way the library handles the calculation of the `row_factor` during the processing of PNG image files. The fields from the PNG file that are directly involved in invoking this vulnerability, as deduced from the information about the vulnerability and the provided patch, are:
+
+1. **Width** (`png_ptr->width`): This field represents the width of the image in pixels. It is used in the calculation of `row_factor` and is a significant part of the multiplication that could lead to an integer overflow if it's exceptionally large.
+
+2. **Channels** (`png_ptr->channels`): This refers to the number of color channels, which affects the amount of data to be processed per pixel. It directly influences the `row_factor` calculation and consequently has an impact on potential overflow conditions.
+
+3. **Bit Depth** (`png_ptr->bit_depth`): The bit depth per channel. The conditional check `(png_ptr->bit_depth > 8 ? 2 : 1)` is used in the calculation to determine the multiplier for the pixel data size, affecting the size of `row_factor`.
+
+4. **Interlaced** (`png_ptr->interlaced`): Whether the PNG image uses interlacing or not. This doesn't directly lead to the overflow but alters the `row_factor` calculation marginally (`+ 6` for interlaced images).
+
+The vulnerability arises from how these fields are used in the calculation of `row_factor` within the `png_check_chunk_length` function. An incorrect calculation due to a very large width, number of channels, or certain conditions related to bit depth and interlacing might trigger an integer overflow. This overflow could subsequently lead to a divide-by-zero error while processing a crafted PNG file, leading to a denial of service.
+
+The patch corrects the potential integer overflow by ensuring the multiplication operations involving these fields are safely performed, with explicit casting to `size_t` to maintain the proper size of integers, thereby avoiding the overflow issue.

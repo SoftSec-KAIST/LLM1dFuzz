@@ -1,0 +1,15 @@
+The root cause of CVE-2017-16828 in GNU Binutils 2.29.1 is an integer overflow issue that occurs when handling a crafted ELF (Executable and Linkable Format) file. This vulnerability is specifically present in the `display_debug_frames` function within `dwarf.c`, which processes debug frames information for display.
+
+The problematic code fails to properly handle the length of augmentation data. When a specially crafted ELF file is processed, an attacker can cause the function to read augmentation data length as an excessively large value due to an integer overflow. This can lead to a heap-based buffer over-read and potentially allow the attacker to cause a denial of service (application crash) or possibly execute arbitrary code.
+
+The root cause is twofold:
+1. **Integer Overflow**: The code inadequately handled large, possibly malicious values, leading to an integer overflow. Before the patch, the type used for `augmentation_data_len` was not safeguarding against overflows effectively when manipulated with data from a crafted file.
+
+2. **Inadequate Validation**: There was a lack of proper validation for the integrity and size of the augmentation data, allowing attacker-controlled data to specify a data length that could cause out-of-bounds reads. This could trigger crashes or other unintended behavior in applications using Binutils to process ELF files.
+
+The patch addresses these issues by:
+- Changing the type of `augmentation_data_len` to `bfd_size_type` to handle size values more safely and consistently across the architecture.
+- Adding checks for integer overflow when evaluating `augmentation_data_len`.
+- Introducing a new function, `display_augmentation_data`, to encapsulate the augmented data handling securely, including proper validations.
+
+By safely handling the length of augmentation data and adding necessary checks to prevent integer overflow, the patch mitigates the vulnerability, ensuring the application does not crash or execute arbitrary code when processing malformed ELF files.

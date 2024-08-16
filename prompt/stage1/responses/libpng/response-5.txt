@@ -1,0 +1,15 @@
+Based on the information provided for CVE-2018-13785, the root cause of the vulnerability appears to be related to an incorrect calculation of `row_factor` in the `png_check_chunk_length` function within `pngrutil.c`. The incorrect calculation could lead to an integer overflow. When an application attempts to process a specially crafted PNG file with malicious dimensions (e.g., width, channels, bit depth), this incorrect calculation could result in a division by zero scenario, because the overflowed value could unpredictably influence subsequent calculations that expect sane, non-overflowed inputs. This division by zero scenario could then lead to a denial of service (DoS) condition by crashing the application that attempts to process such a PNG file.
+
+To understand the root cause:
+
+1. **Improper Calculation**: Initially, the calculation of `row_factor` did not adequately consider the possibility that the calculated value might exceed the maximum positive value that can be represented by the variable's data type (which could lead to an integer overflow). Furthermore, it did not properly account for very large values resulting from high bit depth, width, or channel values, which are feasible in crafted PNG files.
+
+2. **Integer Overflow to Divide-by-Zero**: Once the integer overflow occurs, subsequent logic that relies on the `row_factor` for further calculations could perform operations that are not valid for the overflowed value (like division), leading to a divide-by-zero error. This specific path in the code does not account for the possibility that `row_factor` could be manipulated in such a way by external input, demonstrating a lack of proper input validation or overflow checks.
+
+The patch addresses this root cause by ensuring that the calculation of `row_factor` is done in a manner that avoids integer overflow. It does this by:
+- Casting each contributing component of the calculation to `size_t` before performing the multiplication, ensuring that the result can hold larger values that result from the calculation.
+- Carefully restructuring the calculation to ensure that each step of the calculation is done within the bounds of what `size_t` can represent, preventing overflow.
+
+Additionally, this patch seems to remove a redundant check or assignment to `idat_limit` and ensures `row_factor` is used in a manner consistent with its new, safer calculation.
+
+By addressing the integer overflow issue, the patch correctly mitigates the vulnerability, preventing the division-by-zero that leads to a denial of service. This is an illustration of how critical careful attention to detail in handling arithmetic operations with variables that are influenced by external input is for the security and stability of software.

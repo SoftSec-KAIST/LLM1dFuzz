@@ -1,0 +1,11 @@
+The field in SQL related to invoking CVE-2019-19923 is specifically tied to a query construction that involves `SELECT DISTINCT` in conjunction with a `LEFT JOIN` where the right-hand side of the join is a view. This particular arrangement and use of SQL elements trigger the vulnerability described in CVE-2019-19923.
+
+Here's a breakdown of the related elements:
+
+1. **`SELECT DISTINCT`:** The use of `SELECT DISTINCT` aims to eliminate duplicate rows from the results of a SELECT statement. However, when combined with certain types of joins and views, as described in this CVE, it inadvertently leads to the invocation of unexpected behavior due to the optimization flaw.
+
+2. **`LEFT JOIN`:** A `LEFT JOIN` operation returns all records from the left table and matched records from the right table, or NULL if there is no match. The vulnerability specifically involves scenarios where a `LEFT JOIN` is used and the right-hand side of the join is a particularly constructed view.
+
+3. **Right-hand side is a view:** The use of a view in the right-hand side of the `LEFT JOIN`. A view in SQL is a virtual table based on the result-set of an SQL statement. It seems the handling or optimization of queries involving views in such a context was not appropriately managed in the affected SQLite version, leading to the flaw.
+
+The CVE gets invoked when a query fitting this specific pattern (`SELECT DISTINCT` combined with a `LEFT JOIN` where the right part is a view) is executed, due to the improper optimization logic within SQLite's query flattening routines (`flattenSubquery` function in `select.c`). This could lead to incorrect query results or a NULL pointer dereference, manifesting as crashes or erroneous outputs from the database engine.

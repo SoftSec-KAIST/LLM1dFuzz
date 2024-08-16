@@ -1,0 +1,15 @@
+The root cause of CVE-2018-13785 in libpng 1.6.34 is an incorrect calculation of `row_factor` in the `png_check_chunk_length` function (pngrutil.c) which could lead to an integer overflow, and, as a consequence, a divide-by-zero error. The calculation error arises from how `row_factor` is computed from the dimensions of a PNG image (`png_ptr->width`, `png_ptr->height`), the number of channels (`png_ptr->channels`), and its bit depth (`png_ptr->bit_depth`), as well as whether the image is interlaced (`png_ptr->interlaced`).
+
+Analyzing the description and provided patch:
+
+1. **Original Calculation Issue:**
+   The original code block that calculates `row_factor` does not explicitly cast the result of the width, channels, and bit depth calculation to a larger integer type. This becomes problematic because, if these values are large enough, the product might exceed the capacity of a 32-bit integer, leading to an integer overflow. Integer overflows in turn can result in unexpected behaviors like wrapping around the integer value which may lead to incorrect computations or, in severe cases like this, vulnerabilities.
+
+2. **Potential for Divide-by-Zero:**
+   Due to the incorrect calculation of `row_factor`, there's a follow-up risk of dividing by zero. This situation might occur if the overflowed (thus incorrect) `row_factor` value influences subsequent computations that expect non-zero values. Divide-by-zero errors can crash applications or in specific contexts, be exploited for malicious purposes such as Denial of Service (DoS) attacks.
+
+3. **The Fix:**
+   The patch addresses this issue by ensuring that the calculation of `row_factor` is done using a more appropriate data type (`size_t`), which has a larger capacity and thus can handle larger numbers without overflowing. The calculation now involves casting each multiplicand to `size_t` prior to performing the multiplication and addition. This prevents the integer overflow issue, as `size_t` is capable of holding much larger values (typically the maximum size of any object that can be allocated in C, usually reflecting the machine's word size). Additionally, by handling larger values correctly, it avoids the subsequent risk of divide-by-zero errors as `row_factor` would hold the correct calculation result based on the input PNG file's characteristics.
+
+4. **Conclusion:**
+   The root cause, therefore, is tied to improper handling of arithmetic operations that, under conditions triggered by crafted PNG files, could lead to vulnerabilities allowing DoS attacks. The patch effectively resolves this issue by correcting the arithmetic operation to accommodate larger values, thereby maintaining the integrity of calculations and preventing overflow and divide-by-zero situations.

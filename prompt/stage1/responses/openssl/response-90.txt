@@ -1,0 +1,25 @@
+The root cause of CVE-2017-3735 stems from an out-of-bounds read error while parsing an IPAddressFamily extension in an X.509 certificate. This specific vulnerability arises because the original code did not adequately check that the `addressFamily` field of an `IPAddressFamily` structure contains enough data before proceeding to access its contents. 
+
+In the original code:
+
+```c
+return ((f != NULL &&
+         f->addressFamily != NULL && f->addressFamily->data != NULL)
+        ? ((f->addressFamily->data[0] << 8) | (f->addressFamily->data[1]))
+        : 0);
+```
+
+There is an assumption that if `f`, `f->addressFamily`, and `f->addressFamily->data` are not NULL, then it is safe to access the first two bytes of `f->addressFamily->data`. This assumption neglects to consider cases where `f->addressFamily->length` might be less than 2, leading to a scenario where attempting to read the second byte (`f->addressFamily->data[1]`) could read beyond the allocated memory bounds if the length is less than 2. This out-of-bounds read can lead to undefined behavior, potentially resulting in an incorrect text display of the certificate as noted in the CVE description.
+
+The provided patch addresses this issue by explicitly checking that `f->addressFamily->length` is at least 2 before attempting to read the two bytes needed to form the returned value:
+
+```c
+if (f == NULL
+        || f->addressFamily == NULL
+        || f->addressFamily->data == NULL
+        || f->addressFamily->length < 2)
+    return 0;
+return (f->addressFamily->data[0] << 8) | f->addressFamily->data[1];
+```
+
+This change ensures that an out-of-bounds read does not occur by validating that the necessary length of data is present before proceeding with the data access. Thus, the root cause is fundamentally a missing validation step on the length of a specified field within a data structure, which the patch correctly addresses by adding a check for the `f->addressFamily->length`.

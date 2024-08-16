@@ -1,0 +1,38 @@
+Given the information about CVE-2018-13785, what do you think the root cause is?
+
+- Description
+
+In libpng 1.6.34, a wrong calculation of row_factor in the png_check_chunk_length function (pngrutil.c) may trigger an integer overflow and resultant divide-by-zero while processing a crafted PNG file, leading to a denial of service.
+
+
+- Patch
+
+commit 8a05766cb74af05c04c53e6c9d60c13fc4d59bf2
+Author: Cosmin Truta <ctruta@gmail.com>
+Date:   Sun Jun 17 22:56:29 2018 -0400
+
+    [libpng16] Fix the calculation of row_factor in png_check_chunk_length
+
+    (Bug report by Thuan Pham, SourceForge issue #278)
+
+diff --git a/pngrutil.c b/pngrutil.c
+index 95571b517..5ba995abf 100644
+--- a/pngrutil.c
++++ b/pngrutil.c
+@@ -3167,10 +3167,13 @@ png_check_chunk_length(png_const_structrp png_ptr, const png_uint_32 length)
+    {
+       png_alloc_size_t idat_limit = PNG_UINT_31_MAX;
+       size_t row_factor =
+-         (png_ptr->width * png_ptr->channels * (png_ptr->bit_depth > 8? 2: 1)
+-          + 1 + (png_ptr->interlaced? 6: 0));
++         (size_t)png_ptr->width
++         * (size_t)png_ptr->channels
++         * (png_ptr->bit_depth > 8? 2: 1)
++         + 1
++         + (png_ptr->interlaced? 6: 0);
+       if (png_ptr->height > PNG_UINT_32_MAX/row_factor)
+-         idat_limit=PNG_UINT_31_MAX;
++         idat_limit = PNG_UINT_31_MAX;
+       else
+          idat_limit = png_ptr->height * row_factor;
+       row_factor = row_factor > 32566? 32566 : row_factor;

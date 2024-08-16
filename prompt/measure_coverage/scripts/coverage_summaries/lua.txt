@@ -1,0 +1,80 @@
+Seed 1:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 29.3% (2904 of 9903 lines)
+  functions..: 36.4% (363 of 996 functions)
+  branches...: 15.9% (938 of 5888 branches)
+
+Seed 2:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 24.7% (2448 of 9903 lines)
+  functions..: 32.5% (324 of 996 functions)
+  branches...: 13.1% (770 of 5888 branches)
+
+Seed 3:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 32.4% (3206 of 9903 lines)
+  functions..: 40.7% (405 of 996 functions)
+  branches...: 17.9% (1056 of 5888 branches)
+
+Seed 4:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 31.1% (3076 of 9903 lines)
+  functions..: 39.1% (389 of 996 functions)
+  branches...: 17.1% (1006 of 5888 branches)
+
+Seed 5:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 28.8% (2854 of 9903 lines)
+  functions..: 36.1% (360 of 996 functions)
+  branches...: 15.6% (920 of 5888 branches)
+
+Seed 6:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 25.9% (2562 of 9903 lines)
+  functions..: 32.8% (327 of 996 functions)
+  branches...: 13.4% (788 of 5888 branches)
+
+Seed 7:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 25.9% (2562 of 9903 lines)
+  functions..: 32.8% (327 of 996 functions)
+  branches...: 13.4% (788 of 5888 branches)
+
+Seed 8:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 31.8% (3147 of 9903 lines)
+  functions..: 39.7% (395 of 996 functions)
+  branches...: 17.7% (1041 of 5888 branches)
+
+Seed 9:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 30.7% (3041 of 9903 lines)
+  functions..: 38.6% (384 of 996 functions)
+  branches...: 16.8% (990 of 5888 branches)
+
+Seed 10:
+
+Reading tracefile coverage_total.info
+Summary coverage rate:
+  lines......: 30.9% (3060 of 9903 lines)
+  functions..: 38.8% (386 of 996 functions)
+  branches...: 16.8% (991 of 5888 branches)
+

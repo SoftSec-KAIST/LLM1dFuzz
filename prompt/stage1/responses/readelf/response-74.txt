@@ -1,0 +1,19 @@
+The root cause of CVE-2017-16828 in GNU Binutils lies in an integer overflow vulnerability that affects the handling of ELF (Executable and Linkable Format) files. This vulnerability originates from improper validation and handling of augmentation data length when reading augmentation data from ELF files in the `dwarf.c` source file.
+
+The specific problematic code can lead to an integer overflow when dealing with corrupt or specially crafted ELF files. This overflow can result in a heap-based buffer over-read, which may cause the application to crash (resulting in a denial of service) or, potentially, lead to unspecified further impact, which could include execution of arbitrary code or information disclosure, depending on the nature of the overflow and the context in which it is exploited.
+
+Several contributing factors within the codebase include:
+
+1. **Use of Types Vulnerable to Overflow**: Prior to the patch, the type for `augmentation_data_len` was `unsigned long`, which can overflow when values are too large, especially on platforms where `unsigned long` is a smaller type.
+
+2. **Inadequate Validation**: The original code did not thoroughly validate that the provided length of the augmentation data would not result in reading beyond the buffer’s end when accessing the augmentation data.
+
+The patch addresses these issues by:
+
+1. **Changing the Data Type**: It changes the data type for `augmentation_data_len` from `unsigned long` to `bfd_size_type`. This adjustment ensures that the data type used is more appropriate for sizes and is consistent with other uses of sizes within Binutils, possibly offering better range or clarity on different platforms.
+
+2. **Introducing Proper Validation**: It adds checks to ensure that `augmentation_data_len` does not exceed the bounds of what is available, preventing the integer overflow. Specifically, it ensures that any value indicating the length of the augmentation data does not lead to a situation where the calculated endpoint of the augmentation data lies outside the memory intended for it.
+
+3. **Refactoring Code for Clarity and Safety**: The patch introduces a new function, `display_augmentation_data`, to handle the printing of augmentation data in a more structured and potentially safer way, contributing to the code's overall maintainability and readability.
+
+Together, these changes aim to mitigate the risk of triggering an integer overflow through crafted ELF files, thereby strengthening the resilience of GNU Binutils against certain types of denial-of-service or arbitrary code execution attacks.

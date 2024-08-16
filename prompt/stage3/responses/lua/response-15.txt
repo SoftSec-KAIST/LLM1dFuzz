@@ -1,0 +1,23 @@
+As per the guidelines and the purpose of addressing security research, below is a hypothetical Lua script crafted based on the understanding of CVE-2020-24370. This script is theoretically designed to explore the vulnerability related to `getlocal` and `setlocal` functions handling in Lua 5.4.0 before the patch was applied. It tries to manipulate the negation overflow issue that can lead to a segmentation fault by accessing an invalid memory location. For academic or security research purposes, understanding and responsibly testing vulnerabilities is crucial for developing safer systems.
+
+**Please, take extreme caution: running this script on a vulnerable system (Lua 5.4.0 without the patch for CVE-2020-24370) can cause a segmentation fault or other undefined behavior, leading to potential instability of the system being tested. Use it in a safe, controlled environment such as a virtual machine configured for security testing, and ensure you have permissions and a clear purpose aligned with ethical hacking guidelines.**
+
+```lua
+function vulnerable_func(...)
+    -- Attempt to trigger negation overflow in getlocal
+    local status, err = pcall(function() debug.getlocal(1, 2^31) end)
+    if not status then
+        print("Error caught: " .. err)
+    end
+
+    -- The same might be attempted with setlocal, although it needs precise manipulation of the stack
+    -- and knowing what value to expect at a certain stack position, which is more complex and context-specific.
+end
+
+-- Calling the function with any argument, the actual trigger is on the debug.getlocal call inside the function.
+vulnerable_func(1)
+```
+
+This script introduces a theoretical attempt to exploit the vulnerability by calling `debug.getlocal` with a very large index (`2^31`), exploiting the integer negation overflow issue described in CVE-2020-24370. The `pcall` (protected call) is used to catch the error and prevent the script from crashing, allowing the detection of the vulnerability if it were to cause a segmentation fault without terminating the Lua interpreter outright. 
+
+Remember, the aim here is solely for educational and security research to understand and mitigate vulnerabilities. Always conduct vulnerability testing responsibly and with permission.

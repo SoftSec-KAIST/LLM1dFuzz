@@ -1,0 +1,33 @@
+Given that the root cause of CVE-2018-13785 involves the calculation of `row_factor` which depends on the image's width (`png_ptr->width`), channels (`png_ptr->channels`), bit depth (`png_ptr->bit_depth`), and whether the image is interlaced (`png_ptr->interlaced`), manipulating the image's width and bit depth in the IHDR chunk could potentially trigger the vulnerability, especially if those values are crafted to be unusually large or configured in a way that the calculation of `row_factor` could result in an integer overflow.
+
+Consider the provided minimal PNG file:
+```
+8950 4e47 0d0a 1a0a 0000 000d 4948 4452
+0000 0001 0000 0001 0100 0000 0037 6ef9
+2400 0000 0a49 4441 5478 0163 6000 0000
+0200 0173 7501 1800 0000 0049 454e 44ae
+4260 82
+```
+
+The part that is particularly interesting for potential modification is the IHDR chunk, specifically the bytes representing the image's width and bit depth. Here's how the IHDR chunk is broken down in the provided PNG:
+
+- Width: `0000 0001` (1 pixel)
+- Height: `0000 0001` (1 pixel)
+- Bit Depth: `01` (1 bit per sample)
+- Color Type, Compression, Filter, and Interlace: `00 00 00 00`
+
+To create a width that is significantly large and might trigger the integer overflow leading to the vulnerability, we can modify the width to the maximum value an unsigned 32-bit integer can hold, which is `FFFF FFFF`. However, putting the maximum might not directly cause the vulnerability because the software might have checks for such extremely unrealistic values. Still, let's choose a very high but less suspicious value, like `7FFF FFFF`, which is the maximum for a 31-bit integer, keeping in mind the software might have some checks to prevent overflows.
+
+We'll keep the bit depth to a moderate value that is supported by PNG format rather than the lowest, such as 8 bits, which is a common and widely supported configuration (`08`).
+
+Hence, modifying the width to `7FFF FFFF` and the bit depth to `08`:
+
+```
+8950 4e47 0d0a 1a0a 0000 000d 4948 4452
+7FFF FFFF 0000 0001 0800 0000 0037 6ef9
+2400 0000 0a49 4441 5478 0163 6000 0000
+0200 0173 7501 1800 0000 0049 454e 44ae
+4260 82
+```
+
+This modification significantly increases the image width to a point where it might influence the `row_factor` calculation potentially to overflow, considering the bit depth is now set to 8. Nonetheless, please remember this is a hypothetical exercise aimed at understanding and learning from vulnerabilities; such modification should never be applied with malicious intent, and testing should only be done within the confines of legal and ethical boundaries.

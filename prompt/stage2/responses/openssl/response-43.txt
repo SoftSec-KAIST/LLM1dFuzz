@@ -1,0 +1,5 @@
+Based on the provided information about CVE-2017-3735, the vulnerability involves parsing the `IPAddressFamily` extension in an X.509 certificate. The specific issue relates to the `addressFamily` field within the `IPAddressFamily` structure. In DER (Distinguished Encoding Rules), which is used for encoding the X.509 certificates, this field is expected to contain at least 2 bytes of data to represent the address family correctly. 
+
+The vulnerability occurs because the original code did not enforce a check to ensure that the `addressFamily->data` contained at least 2 bytes before accessing `data[0]` and `data[1]`. This led to a potential one-byte overread if the `addressFamily` field in the DER-encoded X.509 certificate was malformed or intentionally crafted to exploit this weakness, containing less than the required 2 bytes of data.
+
+Therefore, the DER field related to invoking this CVE is essentially the `addressFamily->data` within the `IPAddressFamily` extension of an X.509 certificate. The flaw stems from improper validation of the length of this field before attempting to read data from it.
