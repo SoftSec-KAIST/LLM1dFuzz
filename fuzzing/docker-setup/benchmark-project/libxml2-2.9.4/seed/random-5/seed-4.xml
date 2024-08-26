@@ -1,0 +1,5 @@
+<!DOCTYPE a [
+<!ENTITY ns "verylongnamespaceprefix">
+<!ELEMENT ns:extremelylongelementname EMPTY>
+]>
+<ns:extremelylongelementname/>

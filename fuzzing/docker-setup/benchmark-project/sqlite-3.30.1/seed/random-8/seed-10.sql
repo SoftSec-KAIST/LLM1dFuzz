@@ -1,0 +1,9 @@
+CREATE TABLE t1(a INTEGER, b INTEGER);
+INSERT INTO t1 VALUES (1,2), (3,4);
+
+CREATE VIEW v1 AS SELECT a FROM t1;
+
+-- Potentially vulnerable SQL statement
+SELECT DISTINCT t1.a
+FROM t1 LEFT JOIN v1
+ON t1.a = v1.a;

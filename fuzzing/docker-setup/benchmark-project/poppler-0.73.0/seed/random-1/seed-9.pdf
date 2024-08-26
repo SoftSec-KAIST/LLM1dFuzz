@@ -1,0 +1,5 @@
+%PDF-1.
+1 0 obj<</Pages 2 0 R>>endobj
+2 0 obj<</Kids[-3 0 R]/Count 1>>endobj % Modified; object number for the child is set to negative intentionally
+-3 0 obj<</Parent 2 0 R>>endobj % Additional modification; object defined with a negative number
+trailer<</Size 4 /Root 1 0 R>>

@@ -1,0 +1,5 @@
+firsttime =
+
+    true function foo() if firsttime then do print(debug.getlocal(3, 2 ^ 31))
+
+        end end end print(load(foo))
