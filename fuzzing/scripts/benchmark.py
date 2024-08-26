@@ -39,11 +39,11 @@ SELECTFUZZ_TARGETS = [
 
 
 TEST_TARGETS = [
-            ("swftophp-4.7-2016-9827", "@@", "file", "", check_swftophp_2016_9827),
-            #            ("lrzip-ed51e14-2018-11496", "-t @@", "file", "", check_lrzip_2018_11496),
-            #    ("cjpeg-1.5.90-2018-14498", "-outfile /dev/null @@", "file", "", check_cjpeg_2018_14498),
-        #    ("objcopy-2017-8393", "--compress-debug-sections @@ out", "file", "", check_objcopy_2017_8393),
-                #    ("openssl-2017-3735", "x509 -inform der -in @@ -text", "file", "", check_openssl_2017_3735),
+    ("swftophp-4.7-2016-9827", "@@", "file", "", check_swftophp_2016_9827),
+#    ("lrzip-ed51e14-2018-11496", "-t @@", "file", "", check_lrzip_2018_11496),
+#    ("cjpeg-1.5.90-2018-14498", "-outfile /dev/null @@", "file", "", check_cjpeg_2018_14498),
+#    ("objcopy-2017-8393", "--compress-debug-sections @@ out", "file", "", check_objcopy_2017_8393),
+#    ("openssl-2017-3735", "x509 -inform der -in @@ -text", "file", "", check_openssl_2017_3735),
 ]
 
 

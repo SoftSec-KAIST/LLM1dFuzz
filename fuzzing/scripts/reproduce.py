@@ -140,10 +140,8 @@ def main():
     # Run of Parse without origin data
     # python3 ./reproduce.py run table3 86400 5 all
     elif target == "table3":
-#        benchmark = "all"
-        benchmark = "test"
-#        target_list = [x for (x,y,z,w,_) in FUZZ_TARGETS]
-        target_list = [x for (x,y,z,w,_) in TEST_TARGETS]
+        benchmark = "all"
+        target_list = [x for (x,y,z,w,_) in FUZZ_TARGETS]
         tools += ["AFLpp"]
         seed_mode = "all"
 

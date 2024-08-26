@@ -153,8 +153,6 @@ def print_result(outdir, exp_id, targ_list, timeout, iter_cnt, tools, seed_mode)
                     med_tte = median_tte(tte_list, timeout)
                     found_iter_cnt = iter_cnt - len([x for x in tte_list if (x is None or x > timeout)])
                     if ">" in med_tte:
-#                        found_iter_cnt = iter_cnt - len([x for x in tte_list if (x is None or x > timeout)])
-#                        med_tte = "N.A.(%d/%d)" % (found_iter_cnt, iter_cnt)
                         med_tte = "N.A."
                     med_tte = "%s(%d/%d)" % (med_tte, found_iter_cnt, iter_cnt)
                     med_tte_lists_by_mode[mode].append(med_tte)
